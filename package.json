@@ -1,6 +1,6 @@
 {
   "name": "react-native-jet-gallery",
-  "version": "0.1.0-beta.0",
+  "version": "0.1.0-beta.1",
   "description": "A photo gallery for React Native with shared-element transitions, multi-image paging with looping, GIF support, and custom actions. Powered by Nitro Modules.",
   "main": "./lib/module/index.js",
   "module": "./lib/module/index.js",
