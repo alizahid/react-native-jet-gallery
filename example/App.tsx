@@ -8,6 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import {
+  GestureHandlerRootView,
+  Pressable as GesturePressable,
+} from 'react-native-gesture-handler'
 import { Gallery, type GalleryAction } from 'react-native-jet-gallery'
 
 const urls = [
@@ -40,7 +44,7 @@ const actions: GalleryAction[] = [
 
 export default function App() {
   return (
-    <View style={styles.main}>
+    <GestureHandlerRootView style={styles.main}>
       <StatusBar style="light" />
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -65,11 +69,52 @@ export default function App() {
         >
           <View style={styles.grid}>
             {urls.map((url, index) => (
-              <Gallery.Image index={index} key={url} style={styles.thumbnail}>
+              <Gallery.Image
+                index={index}
+                key={url}
+                onLongPress={(payload) => {
+                  Alert.alert('Long press', `${payload.index}: ${payload.url}`)
+                }}
+                style={styles.thumbnail}
+              >
                 <Image contentFit="cover" source={url} style={styles.image} />
               </Gallery.Image>
             ))}
           </View>
+        </Gallery>
+
+        <Text style={styles.subtitle}>Inside a gesture-handler pressable</Text>
+
+        <Gallery loop={false} urls={[urls[4] ?? '', urls[5] ?? '']}>
+          <GesturePressable
+            onPress={() => {
+              console.log('card pressed')
+            }}
+            style={styles.card}
+          >
+            <Text style={styles.body}>
+              This card is a gesture-handler Pressable. Tapping an image opens
+              the gallery; tapping anywhere else presses the card.
+            </Text>
+
+            <View style={styles.row}>
+              <Gallery.Image index={0} style={styles.cardImage}>
+                <Image
+                  contentFit="cover"
+                  source={urls[4]}
+                  style={styles.image}
+                />
+              </Gallery.Image>
+
+              <Gallery.Image index={1} style={styles.cardImage}>
+                <Image
+                  contentFit="cover"
+                  source={urls[5]}
+                  style={styles.image}
+                />
+              </Gallery.Image>
+            </View>
+          </GesturePressable>
         </Gallery>
 
         <TouchableOpacity
@@ -104,11 +149,41 @@ export default function App() {
           <Text style={styles.label}>Open from a rect</Text>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </GestureHandlerRootView>
   )
 }
 
 const styles = StyleSheet.create({
+  body: {
+    color: '#94a3b8',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: '#141414',
+    borderCurve: 'continuous',
+    borderRadius: 12,
+    padding: 12,
+  },
+  cardImage: {
+    aspectRatio: 1,
+    borderCurve: 'continuous',
+    borderRadius: 8,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  subtitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    marginTop: 24,
+  },
   button: {
     alignItems: 'center',
     backgroundColor: '#1e1e1e',

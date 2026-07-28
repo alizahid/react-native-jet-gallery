@@ -16,12 +16,31 @@ import {
 } from 'react-native'
 import { open, setDismissTarget } from './open'
 import type { TransitionRect } from './specs/GalleryController.nitro'
-import type { GalleryOptions } from './types'
+import type { GalleryEventPayload, GalleryOptions } from './types'
+
+declare const require: (id: string) => { Pressable?: typeof Pressable }
+
+/**
+ * The core Pressable never receives the touch when it is nested inside a
+ * react-native-gesture-handler pressable, so when gesture-handler is
+ * installed, Gallery.Image uses its Pressable instead — nested gesture-
+ * handler pressables resolve correctly, with the innermost one winning.
+ * Metro treats a try/catch require as optional, so apps without
+ * gesture-handler are unaffected.
+ */
+const NativePressable: typeof Pressable = (() => {
+  try {
+    return require('react-native-gesture-handler').Pressable ?? Pressable
+  } catch {
+    return Pressable
+  }
+})()
 
 type GalleryContextValue = {
   hiddenIndex: number | null
   openAt: (index: number) => void
   register: (index: number, view: View | null) => void
+  urlAt: (index: number) => string
 }
 
 const GalleryContext = createContext<GalleryContextValue | null>(null)
@@ -88,7 +107,7 @@ export function GalleryRoot({ urls, children, ...options }: GalleryProps) {
 
     const view = registry.current.get(index)
 
-    if (view) {
+    if (view && typeof view.measureInWindow === 'function') {
       view.measureInWindow((x, y, width, height) => {
         launch({ x, y, width, height }, findNodeHandle(view) ?? undefined)
       })
@@ -97,9 +116,11 @@ export function GalleryRoot({ urls, children, ...options }: GalleryProps) {
     }
   }, [])
 
+  const urlAt = useCallback((index: number) => urlsRef.current[index] ?? '', [])
+
   const value = useMemo(
-    () => ({ hiddenIndex, openAt, register }),
-    [hiddenIndex, openAt, register]
+    () => ({ hiddenIndex, openAt, register, urlAt }),
+    [hiddenIndex, openAt, register, urlAt]
   )
 
   return (
@@ -111,6 +132,7 @@ export interface GalleryImageProps {
   index: number
   children: ReactNode
   disabled?: boolean
+  onLongPress?: (payload: GalleryEventPayload) => void
   style?: StyleProp<ViewStyle>
 }
 
@@ -118,6 +140,7 @@ export function GalleryImage({
   index,
   children,
   disabled,
+  onLongPress,
   style,
 }: GalleryImageProps) {
   const context = useContext(GalleryContext)
@@ -126,7 +149,7 @@ export function GalleryImage({
     throw new Error('Gallery.Image must be rendered inside a <Gallery>')
   }
 
-  const { hiddenIndex, openAt, register } = context
+  const { hiddenIndex, openAt, register, urlAt } = context
 
   const ref = useCallback(
     (view: View | null) => register(index, view),
@@ -134,15 +157,20 @@ export function GalleryImage({
   )
 
   return (
-    <Pressable
+    <NativePressable
       collapsable={false}
       disabled={disabled}
+      onLongPress={
+        onLongPress
+          ? () => onLongPress({ index, url: urlAt(index) })
+          : undefined
+      }
       onPress={() => openAt(index)}
       ref={ref}
       style={[style, hiddenIndex === index && styles.hidden]}
     >
       {children}
-    </Pressable>
+    </NativePressable>
   )
 }
 

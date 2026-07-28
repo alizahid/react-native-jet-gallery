@@ -70,6 +70,33 @@ function Grid() {
 
 `Gallery.Image` wraps your thumbnail in a pressable, measures it on press, and opens the fullscreen viewer with a transition from that exact frame. Dismissing transitions back to the thumbnail of the image you are currently on, not just the one you opened from.
 
+### Gallery.Image props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `index` | `number` | Index of this thumbnail in the surrounding gallery's `urls` |
+| `onLongPress` | `(payload) => void` | Long press on the thumbnail; payload is `{ index, url }` |
+| `disabled` | `boolean` | Disables the built-in pressable |
+| `style` | `StyleProp<ViewStyle>` | Style for the wrapping pressable |
+
+### Inside a gesture-handler pressable
+
+When [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/) is installed, `Gallery.Image` automatically uses its `Pressable`, so thumbnails keep working when nested inside gesture-handler pressables and touchables (the innermost pressable wins):
+
+```tsx
+import { Pressable } from 'react-native-gesture-handler'
+
+<Pressable onPress={openPost}>
+  <Text>Tapping the image opens the gallery — tapping anywhere else presses the card.</Text>
+
+  <Gallery.Image index={0}>
+    <Image source={url} style={styles.image} />
+  </Gallery.Image>
+</Pressable>
+```
+
+No configuration needed — gesture-handler is an optional peer dependency, and apps without it fall back to the core `Pressable`.
+
 ## Imperative API
 
 ```tsx
