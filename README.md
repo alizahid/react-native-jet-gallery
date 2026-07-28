@@ -1,6 +1,19 @@
-# react-native-jet-gallery
+<p align="center">
+  <img alt="react-native-jet-gallery — native photo gallery with shared-element transitions for React Native" src="https://raw.githubusercontent.com/alizahid/react-native-jet-gallery/main/docs/hero.svg" width="900">
+</p>
 
-A photo gallery for React Native with shared-element transitions, multi-image paging with looping, GIF support, and custom actions. Powered by [Nitro Modules](https://nitro.margelo.com).
+<p align="center">
+  Native photo gallery with shared-element transitions, looping, GIFs, and custom actions — powered by <a href="https://nitro.margelo.com">Nitro Modules</a>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/react-native-jet-gallery"><img src="https://img.shields.io/npm/v/react-native-jet-gallery?color=A02F6F&label=npm" alt="npm"></a>
+  <a href="https://github.com/alizahid/react-native-jet-gallery/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/react-native-jet-gallery?color=668C0B" alt="license"></a>
+  <img src="https://img.shields.io/badge/platform-iOS-5E409D" alt="platform">
+  <img src="https://img.shields.io/badge/powered%20by-Nitro%20Modules-205EA6" alt="nitro modules">
+</p>
+
+---
 
 - Wrap **your own image component** — expo-image, `Image`, anything — and get a fullscreen viewer with a shared-element-style open/dismiss transition
 - **Imperative API** to open the gallery programmatically, with a transition when you pass an origin rect
