@@ -24,20 +24,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-          cache: npm
+          bun-version-file: package.json
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Prebuild example
-        run: npx expo prebuild --platform ios --no-install
-        working-directory: example
+        run: bun run --cwd example expo prebuild --platform ios --no-install
 
       - name: Install pods
-        run: npx pod-install ios
+        run: bunx pod-install ios
         working-directory: example
 
       - name: Build
