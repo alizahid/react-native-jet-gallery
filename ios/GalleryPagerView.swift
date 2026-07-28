@@ -95,6 +95,10 @@ final class GalleryPagerView: UIView {
       let item = middleBase + initial
       currentItem = item
       scroll(to: item, animated: false)
+    } else {
+      // Keep the current page aligned when the page width changes (rotation).
+      collectionView.layoutIfNeeded()
+      scroll(to: currentItem, animated: false)
     }
   }
 

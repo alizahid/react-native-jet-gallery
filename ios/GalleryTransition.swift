@@ -2,7 +2,11 @@ import SDWebImage
 import UIKit
 
 final class GalleryTransitionDelegate: NSObject, UIViewControllerTransitioningDelegate {
-  private unowned let session: GallerySession
+  // The session owns this delegate, and the view controller retains the
+  // session for the delegate's whole lifetime — but weak (over unowned)
+  // means a future ownership change degrades to a default transition
+  // instead of a crash.
+  private weak var session: GallerySession?
 
   init(session: GallerySession) {
     self.session = session
@@ -13,12 +17,20 @@ final class GalleryTransitionDelegate: NSObject, UIViewControllerTransitioningDe
     presenting: UIViewController,
     source: UIViewController
   ) -> UIViewControllerAnimatedTransitioning? {
+    guard let session else {
+      return nil
+    }
+
     return GalleryPresentAnimator(session: session)
   }
 
   func animationController(
     forDismissed dismissed: UIViewController
   ) -> UIViewControllerAnimatedTransitioning? {
+    guard let session else {
+      return nil
+    }
+
     return GalleryDismissAnimator(session: session)
   }
 }
@@ -44,11 +56,16 @@ private func cachedImage(for url: String) -> UIImage? {
     return nil
   }
 
-  guard let key = SDWebImageManager.shared.cacheKey(for: parsed) else {
+  guard
+    let key = SDWebImageManager.shared.cacheKey(for: parsed, context: GalleryPageCell.decodeContext)
+  else {
     return nil
   }
 
-  return SDImageCache.shared.imageFromCache(forKey: key)
+  // Memory-only: a disk hit here would decode synchronously on the main
+  // thread right as the transition starts. A miss falls back to the
+  // source-view snapshot.
+  return SDImageCache.shared.imageFromMemoryCache(forKey: key)
 }
 
 /// An image view mirroring the transitioned image; keeps GIFs animating mid-flight.
@@ -194,6 +211,13 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
     guard let animated = animatedView, let target else {
       let session = self.session
 
+      // The flying copy must be in the hierarchy before the animation block
+      // runs, or its property changes apply instantly instead of animating.
+      if let animated = animatedView {
+        container.addSubview(animated)
+        controller.pager.alpha = 0
+      }
+
       UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseIn]) {
         controller.view.alpha = 0
 
@@ -206,11 +230,6 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
         animatedView?.removeFromSuperview()
         session.teardown(at: index)
         context.completeTransition(!context.transitionWasCancelled)
-      }
-
-      if let animated = animatedView {
-        container.addSubview(animated)
-        controller.pager.alpha = 0
       }
 
       return

@@ -6,6 +6,30 @@ struct GalleryDismissTarget {
   let borderRadius: CGFloat
 }
 
+extension GalleryDismissTarget {
+  /// Rejects rects with non-finite values coming across the JS bridge —
+  /// NaN geometry raises CALayerInvalidGeometry when set as a frame.
+  init?(_ rect: TransitionRect) {
+    guard rect.x.isFinite, rect.y.isFinite, rect.width.isFinite, rect.height.isFinite else {
+      return nil
+    }
+
+    let radius = rect.borderRadius ?? 0
+
+    self.init(
+      rect: CGRect(x: rect.x, y: rect.y, width: rect.width, height: rect.height),
+      borderRadius: radius.isFinite ? CGFloat(radius) : 0
+    )
+  }
+}
+
+extension Double {
+  /// Double→Int that returns nil instead of trapping on NaN, ±∞, or overflow.
+  var asSafeInt: Int? {
+    return Int(exactly: rounded())
+  }
+}
+
 struct GalleryActionItem {
   let id: String
   let title: String?
@@ -44,7 +68,7 @@ final class GallerySession {
     let urls = options.urls
 
     self.urls = urls
-    self.initialIndex = min(max(Int(options.initialIndex ?? 0), 0), max(urls.count - 1, 0))
+    self.initialIndex = min(max(options.initialIndex?.asSafeInt ?? 0, 0), max(urls.count - 1, 0))
     self.loop = options.loop ?? false
     self.actions = (options.actions ?? []).map {
       GalleryActionItem(id: $0.id, title: $0.title, icon: $0.icon)
@@ -53,12 +77,7 @@ final class GallerySession {
     self.indicatorColor = UIColor(hexString: options.indicatorColor) ?? .white
     self.indicatorInactiveColor =
       UIColor(hexString: options.indicatorInactiveColor) ?? UIColor.white.withAlphaComponent(0.4)
-    self.origin = options.origin.map {
-      GalleryDismissTarget(
-        rect: CGRect(x: $0.x, y: $0.y, width: $0.width, height: $0.height),
-        borderRadius: CGFloat($0.borderRadius ?? 0)
-      )
-    }
+    self.origin = options.origin.flatMap { GalleryDismissTarget($0) }
     self.sourceTag = options.sourceTag
     self.onShow = options.onShow
     self.onIndexChange = options.onIndexChange
@@ -80,11 +99,11 @@ final class GallerySession {
 
   /// Main thread only. Resolves the React thumbnail view from its tag.
   func resolveSourceView() {
-    guard let tag = sourceTag, tag > 0 else {
+    guard let tag = sourceTag?.asSafeInt, tag > 0 else {
       return
     }
 
-    sourceView = GallerySourceViewFinder.find(tag: Int(tag))
+    sourceView = GallerySourceViewFinder.find(tag: tag)
   }
 
   func hideSourceView() {

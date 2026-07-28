@@ -2,15 +2,32 @@ import Foundation
 import UIKit
 
 class HybridGalleryController: HybridGalleryControllerSpec {
+  /// Main thread only.
   private var session: GallerySession?
   private weak var presentedController: GalleryViewController?
 
+  /// Mirror of `session != nil`. `session` itself is confined to the main
+  /// thread, but `isVisible` is read from the JS thread.
+  private let visibleLock = NSLock()
+  private var visible = false
+
   var isVisible: Bool {
-    return session != nil
+    visibleLock.lock()
+    defer { visibleLock.unlock() }
+    return visible
+  }
+
+  private func setSession(_ session: GallerySession?) {
+    self.session = session
+
+    visibleLock.lock()
+    visible = session != nil
+    visibleLock.unlock()
   }
 
   func open(options: GalleryOpenOptions) throws {
     guard !options.urls.isEmpty else {
+      options.onDismiss?(GalleryEventPayload(index: 0, url: ""))
       return
     }
 
@@ -23,6 +40,9 @@ class HybridGalleryController: HybridGalleryControllerSpec {
 
       if let existing = self.session {
         guard self.presentedController == nil else {
+          // A gallery is already on screen; reject the new session, but fire
+          // its onDismiss so the JS side isn't left waiting forever.
+          session.teardown(at: session.initialIndex)
           return
         }
 
@@ -31,10 +51,10 @@ class HybridGalleryController: HybridGalleryControllerSpec {
         existing.teardown(at: existing.initialIndex)
       }
 
-      self.session = session
+      self.setSession(session)
 
       session.onTeardown = { [weak self] in
-        self?.session = nil
+        self?.setSession(nil)
       }
 
       self.present(session)
@@ -48,15 +68,15 @@ class HybridGalleryController: HybridGalleryControllerSpec {
   }
 
   func setDismissTarget(index: Double, rect: TransitionRect?) throws {
-    let target = rect.map {
-      GalleryDismissTarget(
-        rect: CGRect(x: $0.x, y: $0.y, width: $0.width, height: $0.height),
-        borderRadius: CGFloat($0.borderRadius ?? 0)
-      )
+    guard let index = index.asSafeInt else {
+      return
     }
 
+    // An invalid rect clears the target, falling back to the fade dismiss.
+    let target = rect.flatMap { GalleryDismissTarget($0) }
+
     DispatchQueue.main.async { [weak self] in
-      self?.session?.dismissTargets[Int(index)] = target
+      self?.session?.dismissTargets[index] = target
     }
   }
 

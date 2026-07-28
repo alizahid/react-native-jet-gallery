@@ -118,6 +118,18 @@ final class GalleryViewController: UIViewController {
     }
   }
 
+  override func viewDidDisappear(_ animated: Bool) {
+    super.viewDidDisappear(animated)
+
+    // Safety net for dismissals that bypass the animator (a non-animated
+    // dismiss, or the presenting stack being torn down): the thumbnail must
+    // be restored and onDismiss must fire. Idempotent after the animated
+    // path has already torn down.
+    if isBeingDismissed || presentingViewController == nil {
+      session.teardown(at: currentIndex)
+    }
+  }
+
   private func setChromeHidden(_ hidden: Bool, animated: Bool) {
     chromeHidden = hidden
 

@@ -4,6 +4,17 @@ import UIKit
 final class GalleryPageCell: UICollectionViewCell {
   static let reuseIdentifier = "GalleryPageCell"
 
+  /// Decode capped at 2× screen pixels per axis — enough headroom for zooming
+  /// without holding full-resolution bitmaps for every page. The transition's
+  /// cache lookup must pass the same context, since the thumbnail size is part
+  /// of the cache key.
+  static let decodeContext: [SDWebImageContextOption: Any] = [
+    .imageThumbnailPixelSize: CGSize(
+      width: UIScreen.main.bounds.width * UIScreen.main.scale * 2,
+      height: UIScreen.main.bounds.height * UIScreen.main.scale * 2
+    )
+  ]
+
   var onSingleTap: (() -> Void)?
 
   private let scrollView = UIScrollView()
@@ -47,6 +58,14 @@ final class GalleryPageCell: UICollectionViewCell {
     imageView.transform = .identity
     imageSize = .zero
     onSingleTap = nil
+
+    // Clear zoom state so a reused cell whose image is still loading doesn't
+    // report isZoomed and block the pan-to-dismiss gesture.
+    scrollView.minimumZoomScale = 1
+    scrollView.maximumZoomScale = 1
+    scrollView.zoomScale = 1
+    scrollView.contentSize = .zero
+    scrollView.contentInset = .zero
   }
 
   override func layoutSubviews() {
@@ -66,8 +85,13 @@ final class GalleryPageCell: UICollectionViewCell {
 
     let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url)
 
-    imageView.sd_setImage(with: parsed, placeholderImage: nil, options: [.retryFailed]) {
-      [weak self] image, _, _, _ in
+    imageView.sd_setImage(
+      with: parsed,
+      placeholderImage: nil,
+      options: [.retryFailed],
+      context: Self.decodeContext,
+      progress: nil
+    ) { [weak self] image, _, _, _ in
       guard let self, let image else {
         return
       }
