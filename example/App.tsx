@@ -1,18 +1,73 @@
 import { Image } from 'expo-image'
 import { StatusBar } from 'expo-status-bar'
+import { PressableOpacity } from 'pressto'
+import { type ComponentType, type ReactNode, useMemo } from 'react'
 import {
   Alert,
+  Pressable as CorePressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  type ViewStyle,
 } from 'react-native'
 import {
+  Gesture,
+  GestureDetector,
   GestureHandlerRootView,
   Pressable as GesturePressable,
 } from 'react-native-gesture-handler'
 import { Gallery, type GalleryAction } from 'react-native-jet-gallery'
+
+/**
+ * Mimics Acorn's post card: a horizontal swipe-actions Pan wrapping a pressto
+ * pressable wrapping the content.
+ */
+function AcornStack({ children, onPress, style }: ParentPressableProps) {
+  const pan = useMemo(() => Gesture.Pan().activeOffsetX([-40, 40]), [])
+
+  return (
+    <GestureDetector gesture={pan}>
+      <PressableOpacity onPress={onPress} style={style}>
+        <View collapsable={false}>{children}</View>
+      </PressableOpacity>
+    </GestureDetector>
+  )
+}
+
+type ParentPressableProps = {
+  children?: ReactNode
+  onPress?: () => void
+  style?: ViewStyle
+}
+
+const parents: Array<{
+  Component: ComponentType<ParentPressableProps>
+  key: string
+  label: string
+}> = [
+  {
+    Component: CorePressable as ComponentType<ParentPressableProps>,
+    key: 'core',
+    label: 'react-native Pressable',
+  },
+  {
+    Component: GesturePressable as ComponentType<ParentPressableProps>,
+    key: 'gesture-handler',
+    label: 'gesture-handler Pressable',
+  },
+  {
+    Component: PressableOpacity as ComponentType<ParentPressableProps>,
+    key: 'pressto',
+    label: 'pressto PressableOpacity',
+  },
+  {
+    Component: AcornStack,
+    key: 'acorn',
+    label: 'pan + pressto (Acorn stack)',
+  },
+]
 
 const urls = [
   'https://picsum.photos/id/10/1200/800',
@@ -83,39 +138,50 @@ export default function App() {
           </View>
         </Gallery>
 
-        <Text style={styles.subtitle}>Inside a gesture-handler pressable</Text>
+        {parents.map(({ Component, key, label }) => (
+          <View key={key}>
+            <Text style={styles.subtitle}>Inside a {label}</Text>
 
-        <Gallery loop={false} urls={[urls[4] ?? '', urls[5] ?? '']}>
-          <GesturePressable
-            onPress={() => {
-              console.log('card pressed')
-            }}
-            style={styles.card}
-          >
-            <Text style={styles.body}>
-              This card is a gesture-handler Pressable. Tapping an image opens
-              the gallery; tapping anywhere else presses the card.
-            </Text>
+            <Gallery
+              loop={false}
+              onShow={() => {
+                console.log(`${key} gallery shown`)
+              }}
+              urls={[urls[4] ?? '', urls[5] ?? '']}
+            >
+              <Component
+                onPress={() => {
+                  console.log(`${key} card pressed`)
+                }}
+                style={styles.card}
+              >
+                <Text style={styles.body}>
+                  Tapping an image opens the gallery; tapping anywhere else
+                  presses the card.
+                </Text>
 
-            <View style={styles.row}>
-              <Gallery.Image index={0} style={styles.cardImage}>
-                <Image
-                  contentFit="cover"
-                  source={urls[4]}
-                  style={styles.image}
-                />
-              </Gallery.Image>
-
-              <Gallery.Image index={1} style={styles.cardImage}>
-                <Image
-                  contentFit="cover"
-                  source={urls[5]}
-                  style={styles.image}
-                />
-              </Gallery.Image>
-            </View>
-          </GesturePressable>
-        </Gallery>
+                <View style={styles.row}>
+                  {[urls[4] ?? '', urls[5] ?? ''].map((url, index) => (
+                    <Gallery.Image
+                      index={index}
+                      key={url}
+                      onLongPress={(payload) => {
+                        console.log(`${key} long press at ${payload.index}`)
+                      }}
+                      style={styles.cardImage}
+                    >
+                      <Image
+                        contentFit="cover"
+                        source={url}
+                        style={styles.image}
+                      />
+                    </Gallery.Image>
+                  ))}
+                </View>
+              </Component>
+            </Gallery>
+          </View>
+        ))}
 
         <TouchableOpacity
           onPress={() => {
