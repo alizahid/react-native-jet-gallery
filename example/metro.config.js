@@ -10,7 +10,7 @@ config.watchFolders = [root]
 const defaultResolveRequest = config.resolver.resolveRequest
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'react-native-nitro-gallery') {
+  if (moduleName === 'react-native-jet-gallery') {
     return {
       filePath: path.join(root, 'src', 'index.ts'),
       type: 'sourceFile',

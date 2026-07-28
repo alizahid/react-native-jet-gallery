@@ -14,15 +14,15 @@
 #endif
 
 // Forward declaration of `GalleryOpenOptions` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryOpenOptions; }
+namespace margelo::nitro::jetgallery { struct GalleryOpenOptions; }
 // Forward declaration of `TransitionRect` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct TransitionRect; }
+namespace margelo::nitro::jetgallery { struct TransitionRect; }
 
 #include "GalleryOpenOptions.hpp"
 #include "TransitionRect.hpp"
 #include <optional>
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   using namespace margelo::nitro;
 
@@ -66,4 +66,4 @@ namespace margelo::nitro::nitrogallery {
       static constexpr auto TAG = "GalleryController";
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery

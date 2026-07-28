@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { Gallery, type GalleryAction } from 'react-native-nitro-gallery'
+import { Gallery, type GalleryAction } from 'react-native-jet-gallery'
 
 const urls = [
   'https://picsum.photos/id/10/1200/800',
@@ -44,7 +44,7 @@ export default function App() {
       <StatusBar style="light" />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Nitro Gallery</Text>
+        <Text style={styles.title}>Jet Gallery</Text>
 
         <Gallery
           actions={actions}

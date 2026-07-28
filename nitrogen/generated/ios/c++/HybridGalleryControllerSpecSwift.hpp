@@ -10,18 +10,18 @@
 #include "HybridGalleryControllerSpec.hpp"
 
 // Forward declaration of `HybridGalleryControllerSpec_cxx` to properly resolve imports.
-namespace NitroGallery { class HybridGalleryControllerSpec_cxx; }
+namespace JetGallery { class HybridGalleryControllerSpec_cxx; }
 
 // Forward declaration of `GalleryOpenOptions` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryOpenOptions; }
+namespace margelo::nitro::jetgallery { struct GalleryOpenOptions; }
 // Forward declaration of `TransitionRect` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct TransitionRect; }
+namespace margelo::nitro::jetgallery { struct TransitionRect; }
 // Forward declaration of `GalleryActionSpec` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryActionSpec; }
+namespace margelo::nitro::jetgallery { struct GalleryActionSpec; }
 // Forward declaration of `GalleryEventPayload` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryEventPayload; }
+namespace margelo::nitro::jetgallery { struct GalleryEventPayload; }
 // Forward declaration of `GalleryActionPayload` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryActionPayload; }
+namespace margelo::nitro::jetgallery { struct GalleryActionPayload; }
 
 #include "GalleryOpenOptions.hpp"
 #include <string>
@@ -33,9 +33,9 @@ namespace margelo::nitro::nitrogallery { struct GalleryActionPayload; }
 #include "GalleryEventPayload.hpp"
 #include "GalleryActionPayload.hpp"
 
-#include "NitroGallery-Swift-Cxx-Umbrella.hpp"
+#include "JetGallery-Swift-Cxx-Umbrella.hpp"
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * The C++ part of HybridGalleryControllerSpec_cxx.swift.
@@ -50,13 +50,13 @@ namespace margelo::nitro::nitrogallery {
   class HybridGalleryControllerSpecSwift: public virtual HybridGalleryControllerSpec {
   public:
     // Constructor from a Swift instance
-    explicit HybridGalleryControllerSpecSwift(const NitroGallery::HybridGalleryControllerSpec_cxx& swiftPart):
+    explicit HybridGalleryControllerSpecSwift(const JetGallery::HybridGalleryControllerSpec_cxx& swiftPart):
       HybridObject(HybridGalleryControllerSpec::TAG),
       _swiftPart(swiftPart) { }
 
   public:
     // Get the Swift part
-    inline NitroGallery::HybridGalleryControllerSpec_cxx& getSwiftPart() noexcept {
+    inline JetGallery::HybridGalleryControllerSpec_cxx& getSwiftPart() noexcept {
       return _swiftPart;
     }
 
@@ -105,7 +105,7 @@ namespace margelo::nitro::nitrogallery {
     }
 
   private:
-    NitroGallery::HybridGalleryControllerSpec_cxx _swiftPart;
+    JetGallery::HybridGalleryControllerSpec_cxx _swiftPart;
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery

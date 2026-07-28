@@ -32,7 +32,7 @@
 
 #include <string>
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * A struct which can be represented as a JavaScript object (GalleryEventPayload).
@@ -50,21 +50,21 @@ namespace margelo::nitro::nitrogallery {
     friend bool operator==(const GalleryEventPayload& lhs, const GalleryEventPayload& rhs) = default;
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery
 
 namespace margelo::nitro {
 
   // C++ GalleryEventPayload <> JS GalleryEventPayload (object)
   template <>
-  struct JSIConverter<margelo::nitro::nitrogallery::GalleryEventPayload> final {
-    static inline margelo::nitro::nitrogallery::GalleryEventPayload fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::jetgallery::GalleryEventPayload> final {
+    static inline margelo::nitro::jetgallery::GalleryEventPayload fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::nitrogallery::GalleryEventPayload(
+      return margelo::nitro::jetgallery::GalleryEventPayload(
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "index"))),
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "url")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::nitrogallery::GalleryEventPayload& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryEventPayload& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "index"), JSIConverter<double>::toJSI(runtime, arg.index));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "url"), JSIConverter<std::string>::toJSI(runtime, arg.url));

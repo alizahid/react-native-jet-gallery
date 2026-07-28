@@ -10,10 +10,10 @@ import NitroModules
 /**
  * Represents an instance of `GalleryActionPayload`, backed by a C++ struct.
  */
-public typealias GalleryActionPayload = margelo.nitro.nitrogallery.GalleryActionPayload
+public typealias GalleryActionPayload = margelo.nitro.jetgallery.GalleryActionPayload
 
 public extension GalleryActionPayload {
-  private typealias bridge = margelo.nitro.nitrogallery.bridge.swift
+  private typealias bridge = margelo.nitro.jetgallery.bridge.swift
 
   /**
    * Create a new instance of `GalleryActionPayload`.

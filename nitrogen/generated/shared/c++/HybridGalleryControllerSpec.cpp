@@ -7,7 +7,7 @@
 
 #include "HybridGalleryControllerSpec.hpp"
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   void HybridGalleryControllerSpec::loadHybridMethods() {
     // load base methods/properties
@@ -21,4 +21,4 @@ namespace margelo::nitro::nitrogallery {
     });
   }
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery

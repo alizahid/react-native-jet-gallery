@@ -10,10 +10,10 @@ import NitroModules
 /**
  * Represents an instance of `GalleryOpenOptions`, backed by a C++ struct.
  */
-public typealias GalleryOpenOptions = margelo.nitro.nitrogallery.GalleryOpenOptions
+public typealias GalleryOpenOptions = margelo.nitro.jetgallery.GalleryOpenOptions
 
 public extension GalleryOpenOptions {
-  private typealias bridge = margelo.nitro.nitrogallery.bridge.swift
+  private typealias bridge = margelo.nitro.jetgallery.bridge.swift
 
   /**
    * Create a new instance of `GalleryOpenOptions`.

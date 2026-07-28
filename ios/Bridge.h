@@ -1,6 +1,6 @@
 //
 //  Bridge.h
-//  react-native-nitro-gallery
+//  react-native-jet-gallery
 //
 
 #pragma once

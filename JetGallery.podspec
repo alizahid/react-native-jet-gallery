@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 Pod::Spec.new do |s|
-  s.name         = "NitroGallery"
+  s.name         = "JetGallery"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/alizahid/react-native-nitro-gallery.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/alizahid/react-native-jet-gallery.git", :tag => "#{s.version}" }
 
   s.source_files = [
     # Implementation (Swift)
@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
     "ios/**/*.{m,mm}",
   ]
 
-  load 'nitrogen/generated/ios/NitroGallery+autolinking.rb'
+  load 'nitrogen/generated/ios/JetGallery+autolinking.rb'
   add_nitrogen_files(s)
 
   s.dependency 'SDWebImage', '~> 5.19'

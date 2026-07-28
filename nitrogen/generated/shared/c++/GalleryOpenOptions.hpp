@@ -29,13 +29,13 @@
 #endif
 
 // Forward declaration of `TransitionRect` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct TransitionRect; }
+namespace margelo::nitro::jetgallery { struct TransitionRect; }
 // Forward declaration of `GalleryActionSpec` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryActionSpec; }
+namespace margelo::nitro::jetgallery { struct GalleryActionSpec; }
 // Forward declaration of `GalleryEventPayload` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryEventPayload; }
+namespace margelo::nitro::jetgallery { struct GalleryEventPayload; }
 // Forward declaration of `GalleryActionPayload` to properly resolve imports.
-namespace margelo::nitro::nitrogallery { struct GalleryActionPayload; }
+namespace margelo::nitro::jetgallery { struct GalleryActionPayload; }
 
 #include <string>
 #include <vector>
@@ -46,7 +46,7 @@ namespace margelo::nitro::nitrogallery { struct GalleryActionPayload; }
 #include "GalleryEventPayload.hpp"
 #include "GalleryActionPayload.hpp"
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * A struct which can be represented as a JavaScript object (GalleryOpenOptions).
@@ -75,46 +75,46 @@ namespace margelo::nitro::nitrogallery {
     // GalleryOpenOptions is not equatable because these properties are not equatable: onShow, onIndexChange, onAction, onDismiss
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery
 
 namespace margelo::nitro {
 
   // C++ GalleryOpenOptions <> JS GalleryOpenOptions (object)
   template <>
-  struct JSIConverter<margelo::nitro::nitrogallery::GalleryOpenOptions> final {
-    static inline margelo::nitro::nitrogallery::GalleryOpenOptions fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::jetgallery::GalleryOpenOptions> final {
+    static inline margelo::nitro::jetgallery::GalleryOpenOptions fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::nitrogallery::GalleryOpenOptions(
+      return margelo::nitro::jetgallery::GalleryOpenOptions(
         JSIConverter<std::vector<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "urls"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "initialIndex"))),
         JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "loop"))),
-        JSIConverter<std::optional<margelo::nitro::nitrogallery::TransitionRect>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin"))),
+        JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "sourceTag"))),
-        JSIConverter<std::optional<std::vector<margelo::nitro::nitrogallery::GalleryActionSpec>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "actions"))),
+        JSIConverter<std::optional<std::vector<margelo::nitro::jetgallery::GalleryActionSpec>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "actions"))),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "backgroundColor"))),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "indicatorColor"))),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "indicatorInactiveColor"))),
         JSIConverter<std::optional<std::function<void()>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onShow"))),
-        JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange"))),
-        JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryActionPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onAction"))),
-        JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onDismiss")))
+        JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange"))),
+        JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryActionPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onAction"))),
+        JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onDismiss")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::nitrogallery::GalleryOpenOptions& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryOpenOptions& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "urls"), JSIConverter<std::vector<std::string>>::toJSI(runtime, arg.urls));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "initialIndex"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.initialIndex));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "loop"), JSIConverter<std::optional<bool>>::toJSI(runtime, arg.loop));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "origin"), JSIConverter<std::optional<margelo::nitro::nitrogallery::TransitionRect>>::toJSI(runtime, arg.origin));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "origin"), JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::toJSI(runtime, arg.origin));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "sourceTag"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.sourceTag));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "actions"), JSIConverter<std::optional<std::vector<margelo::nitro::nitrogallery::GalleryActionSpec>>>::toJSI(runtime, arg.actions));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "actions"), JSIConverter<std::optional<std::vector<margelo::nitro::jetgallery::GalleryActionSpec>>>::toJSI(runtime, arg.actions));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "backgroundColor"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.backgroundColor));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "indicatorColor"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.indicatorColor));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "indicatorInactiveColor"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.indicatorInactiveColor));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "onShow"), JSIConverter<std::optional<std::function<void()>>>::toJSI(runtime, arg.onShow));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange"), JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::toJSI(runtime, arg.onIndexChange));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onAction"), JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryActionPayload&)>>>::toJSI(runtime, arg.onAction));
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onDismiss"), JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::toJSI(runtime, arg.onDismiss));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange"), JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::toJSI(runtime, arg.onIndexChange));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onAction"), JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryActionPayload&)>>>::toJSI(runtime, arg.onAction));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "onDismiss"), JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::toJSI(runtime, arg.onDismiss));
       return obj;
     }
     static inline bool canConvert(jsi::Runtime& runtime, const jsi::Value& value) {
@@ -128,16 +128,16 @@ namespace margelo::nitro {
       if (!JSIConverter<std::vector<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "urls")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "initialIndex")))) return false;
       if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "loop")))) return false;
-      if (!JSIConverter<std::optional<margelo::nitro::nitrogallery::TransitionRect>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin")))) return false;
+      if (!JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "sourceTag")))) return false;
-      if (!JSIConverter<std::optional<std::vector<margelo::nitro::nitrogallery::GalleryActionSpec>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "actions")))) return false;
+      if (!JSIConverter<std::optional<std::vector<margelo::nitro::jetgallery::GalleryActionSpec>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "actions")))) return false;
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "backgroundColor")))) return false;
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "indicatorColor")))) return false;
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "indicatorInactiveColor")))) return false;
       if (!JSIConverter<std::optional<std::function<void()>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onShow")))) return false;
-      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange")))) return false;
-      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryActionPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onAction")))) return false;
-      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::nitrogallery::GalleryEventPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onDismiss")))) return false;
+      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onIndexChange")))) return false;
+      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryActionPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onAction")))) return false;
+      if (!JSIConverter<std::optional<std::function<void(const margelo::nitro::jetgallery::GalleryEventPayload&)>>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "onDismiss")))) return false;
       return true;
     }
   };

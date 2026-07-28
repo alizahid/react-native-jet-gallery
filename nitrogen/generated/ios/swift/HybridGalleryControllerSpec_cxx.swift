@@ -18,11 +18,11 @@ import NitroModules
  */
 open class HybridGalleryControllerSpec_cxx {
   /**
-   * The Swift <> C++ bridge's namespace (`margelo::nitro::nitrogallery::bridge::swift`)
-   * from `NitroGallery-Swift-Cxx-Bridge.hpp`.
+   * The Swift <> C++ bridge's namespace (`margelo::nitro::jetgallery::bridge::swift`)
+   * from `JetGallery-Swift-Cxx-Bridge.hpp`.
    * This contains specialized C++ templates, and C++ helper functions that can be accessed from Swift.
    */
-  public typealias bridge = margelo.nitro.nitrogallery.bridge.swift
+  public typealias bridge = margelo.nitro.jetgallery.bridge.swift
 
   /**
    * Holds an instance of the `HybridGalleryControllerSpec` Swift protocol.

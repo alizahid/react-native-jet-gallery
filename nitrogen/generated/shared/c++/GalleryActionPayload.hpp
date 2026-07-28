@@ -32,7 +32,7 @@
 
 #include <string>
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * A struct which can be represented as a JavaScript object (GalleryActionPayload).
@@ -51,22 +51,22 @@ namespace margelo::nitro::nitrogallery {
     friend bool operator==(const GalleryActionPayload& lhs, const GalleryActionPayload& rhs) = default;
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery
 
 namespace margelo::nitro {
 
   // C++ GalleryActionPayload <> JS GalleryActionPayload (object)
   template <>
-  struct JSIConverter<margelo::nitro::nitrogallery::GalleryActionPayload> final {
-    static inline margelo::nitro::nitrogallery::GalleryActionPayload fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::jetgallery::GalleryActionPayload> final {
+    static inline margelo::nitro::jetgallery::GalleryActionPayload fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::nitrogallery::GalleryActionPayload(
+      return margelo::nitro::jetgallery::GalleryActionPayload(
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "actionId"))),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "index"))),
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "url")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::nitrogallery::GalleryActionPayload& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryActionPayload& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "actionId"), JSIConverter<std::string>::toJSI(runtime, arg.actionId));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "index"), JSIConverter<double>::toJSI(runtime, arg.index));

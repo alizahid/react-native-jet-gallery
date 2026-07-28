@@ -10,7 +10,7 @@ export function getController(): GalleryController | null {
     if (__DEV__ && !warned) {
       warned = true
       console.warn(
-        `react-native-nitro-gallery is not supported on ${Platform.OS} yet; calls are no-ops.`
+        `react-native-jet-gallery is not supported on ${Platform.OS} yet; calls are no-ops.`
       )
     }
 

@@ -1,4 +1,4 @@
-# react-native-nitro-gallery
+# react-native-jet-gallery
 
 A photo gallery for React Native with shared-element transitions, multi-image paging with looping, GIF support, and custom actions. Powered by [Nitro Modules](https://nitro.margelo.com).
 
@@ -16,7 +16,7 @@ A photo gallery for React Native with shared-element transitions, multi-image pa
 ## Installation
 
 ```sh
-npm install react-native-nitro-gallery react-native-nitro-modules
+npm install react-native-jet-gallery react-native-nitro-modules
 cd ios && pod install
 ```
 
@@ -26,7 +26,7 @@ Using Expo? `npx expo prebuild` handles the pod install.
 
 ```tsx
 import { Image } from 'expo-image'
-import { Gallery } from 'react-native-nitro-gallery'
+import { Gallery } from 'react-native-jet-gallery'
 
 const urls = ['https://example.com/1.jpg', 'https://example.com/2.gif']
 
@@ -60,7 +60,7 @@ function Grid() {
 ## Imperative API
 
 ```tsx
-import { Gallery } from 'react-native-nitro-gallery'
+import { Gallery } from 'react-native-jet-gallery'
 
 // Plain fade-in
 Gallery.open({ urls, initialIndex: 2, loop: true })

@@ -1,5 +1,5 @@
 {
-  "name": "react-native-nitro-gallery-example",
+  "name": "react-native-jet-gallery-example",
   "version": "0.0.1",
   "private": true,
   "main": "index.js",
@@ -15,7 +15,7 @@
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-native": "0.86.0",
-    "react-native-nitro-gallery": "file:..",
+    "react-native-jet-gallery": "file:..",
     "react-native-nitro-modules": "^0.36.1"
   },
   "devDependencies": {

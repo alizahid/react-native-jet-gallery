@@ -33,7 +33,7 @@
 #include <string>
 #include <optional>
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * A struct which can be represented as a JavaScript object (GalleryActionSpec).
@@ -52,22 +52,22 @@ namespace margelo::nitro::nitrogallery {
     friend bool operator==(const GalleryActionSpec& lhs, const GalleryActionSpec& rhs) = default;
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery
 
 namespace margelo::nitro {
 
   // C++ GalleryActionSpec <> JS GalleryActionSpec (object)
   template <>
-  struct JSIConverter<margelo::nitro::nitrogallery::GalleryActionSpec> final {
-    static inline margelo::nitro::nitrogallery::GalleryActionSpec fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::jetgallery::GalleryActionSpec> final {
+    static inline margelo::nitro::jetgallery::GalleryActionSpec fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::nitrogallery::GalleryActionSpec(
+      return margelo::nitro::jetgallery::GalleryActionSpec(
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "id"))),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "title"))),
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "icon")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::nitrogallery::GalleryActionSpec& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryActionSpec& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "id"), JSIConverter<std::string>::toJSI(runtime, arg.id));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "title"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.title));

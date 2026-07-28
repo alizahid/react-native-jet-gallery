@@ -1,5 +1,5 @@
 {
-  "name": "react-native-nitro-gallery",
+  "name": "react-native-jet-gallery",
   "version": "0.1.0",
   "description": "A photo gallery for React Native with shared-element transitions, multi-image paging with looping, GIF support, and custom actions. Powered by Nitro Modules.",
   "main": "./lib/module/index.js",
@@ -46,11 +46,11 @@
   "workspaces": [
     "example"
   ],
-  "repository": "https://github.com/alizahid/react-native-nitro-gallery.git",
+  "repository": "https://github.com/alizahid/react-native-jet-gallery.git",
   "author": "Ali Zahid",
   "license": "MIT",
-  "bugs": "https://github.com/alizahid/react-native-nitro-gallery/issues",
-  "homepage": "https://github.com/alizahid/react-native-nitro-gallery#readme",
+  "bugs": "https://github.com/alizahid/react-native-jet-gallery/issues",
+  "homepage": "https://github.com/alizahid/react-native-jet-gallery#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

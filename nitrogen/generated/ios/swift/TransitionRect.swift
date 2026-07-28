@@ -10,10 +10,10 @@ import NitroModules
 /**
  * Represents an instance of `TransitionRect`, backed by a C++ struct.
  */
-public typealias TransitionRect = margelo.nitro.nitrogallery.TransitionRect
+public typealias TransitionRect = margelo.nitro.jetgallery.TransitionRect
 
 public extension TransitionRect {
-  private typealias bridge = margelo.nitro.nitrogallery.bridge.swift
+  private typealias bridge = margelo.nitro.jetgallery.bridge.swift
 
   /**
    * Create a new instance of `TransitionRect`.

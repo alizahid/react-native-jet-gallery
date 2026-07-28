@@ -7,5 +7,5 @@
 
 #include "HybridGalleryControllerSpecSwift.hpp"
 
-namespace margelo::nitro::nitrogallery {
-} // namespace margelo::nitro::nitrogallery
+namespace margelo::nitro::jetgallery {
+} // namespace margelo::nitro::jetgallery

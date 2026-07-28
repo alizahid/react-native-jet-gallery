@@ -12,7 +12,7 @@ import NitroModules
  * This class can be used from C++, e.g. to wrap the Swift closure as a `std::function`.
  */
 public final class Func_void_GalleryActionPayload {
-  public typealias bridge = margelo.nitro.nitrogallery.bridge.swift
+  public typealias bridge = margelo.nitro.jetgallery.bridge.swift
 
   private let closure: (_ payload: GalleryActionPayload) -> Void
 

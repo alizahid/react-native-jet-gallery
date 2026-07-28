@@ -32,7 +32,7 @@
 
 #include <optional>
 
-namespace margelo::nitro::nitrogallery {
+namespace margelo::nitro::jetgallery {
 
   /**
    * A struct which can be represented as a JavaScript object (TransitionRect).
@@ -53,16 +53,16 @@ namespace margelo::nitro::nitrogallery {
     friend bool operator==(const TransitionRect& lhs, const TransitionRect& rhs) = default;
   };
 
-} // namespace margelo::nitro::nitrogallery
+} // namespace margelo::nitro::jetgallery
 
 namespace margelo::nitro {
 
   // C++ TransitionRect <> JS TransitionRect (object)
   template <>
-  struct JSIConverter<margelo::nitro::nitrogallery::TransitionRect> final {
-    static inline margelo::nitro::nitrogallery::TransitionRect fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
+  struct JSIConverter<margelo::nitro::jetgallery::TransitionRect> final {
+    static inline margelo::nitro::jetgallery::TransitionRect fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
-      return margelo::nitro::nitrogallery::TransitionRect(
+      return margelo::nitro::jetgallery::TransitionRect(
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "x"))),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "y"))),
         JSIConverter<double>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "width"))),
@@ -70,7 +70,7 @@ namespace margelo::nitro {
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "borderRadius")))
       );
     }
-    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::nitrogallery::TransitionRect& arg) {
+    static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::TransitionRect& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "x"), JSIConverter<double>::toJSI(runtime, arg.x));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "y"), JSIConverter<double>::toJSI(runtime, arg.y));

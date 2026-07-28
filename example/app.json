@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "NitroGalleryExample",
-    "slug": "nitro-gallery-example",
+    "name": "JetGalleryExample",
+    "slug": "jet-gallery-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#000000",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.alizahid.nitrogalleryexample",
+      "bundleIdentifier": "com.alizahid.jetgalleryexample",
       "supportsTablet": false
     }
   }
