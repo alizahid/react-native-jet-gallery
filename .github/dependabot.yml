@@ -1,0 +1,36 @@
+version: 2
+updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+    labels:
+      - 'dependencies'
+
+  - package-ecosystem: 'npm'
+    directories:
+      - '/example/'
+      - '/'
+    schedule:
+      interval: 'daily'
+    labels:
+      - 'nitro-core'
+      - 'dependencies'
+      - 'typescript'
+      - 'nitrogen'
+
+    groups:
+      babel:
+        patterns:
+          - '@babel/*'
+      react-native:
+        patterns:
+          - '@react-native/*'
+      expo:
+        patterns:
+          - 'expo'
+          - 'expo-*'
+      nitro:
+        patterns:
+          - 'nitrogen'
+          - 'react-native-nitro-modules'

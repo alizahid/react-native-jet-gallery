@@ -1,0 +1,26 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": [
+    "nitrogallery"
+  ],
+  "ios": {
+    "iosModuleName": "NitroGallery"
+  },
+  "android": {
+    "androidNamespace": [
+      "nitrogallery"
+    ],
+    "androidCxxLibName": "NitroGallery"
+  },
+  "autolinking": {
+    "GalleryController": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridGalleryController"
+      }
+    }
+  },
+  "ignorePaths": [
+    "**/node_modules"
+  ]
+}

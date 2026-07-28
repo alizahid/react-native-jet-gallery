@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "NitroGalleryExample",
+    "slug": "nitro-gallery-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.alizahid.nitrogalleryexample",
+      "supportsTablet": false
+    }
+  }
+}

@@ -1,0 +1,154 @@
+import { Image } from 'expo-image'
+import { StatusBar } from 'expo-status-bar'
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native'
+import { Gallery, type GalleryAction } from 'react-native-nitro-gallery'
+
+const urls = [
+  'https://picsum.photos/id/10/1200/800',
+  'https://picsum.photos/id/1015/900/1600',
+  'https://picsum.photos/id/1025/1200/1200',
+  'https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif',
+  'https://picsum.photos/id/1039/1600/900',
+  'https://picsum.photos/id/1043/800/1200',
+]
+
+const actions: GalleryAction[] = [
+  {
+    icon: 'square.and.arrow.down',
+    id: 'save',
+    onPress: (payload) => {
+      Alert.alert('Save', `${payload.index}: ${payload.url}`)
+    },
+    title: 'Save',
+  },
+  {
+    icon: 'square.and.arrow.up',
+    id: 'share',
+    onPress: (payload) => {
+      Alert.alert('Share', `${payload.index}: ${payload.url}`)
+    },
+    title: 'Share',
+  },
+]
+
+export default function App() {
+  return (
+    <View style={styles.main}>
+      <StatusBar style="light" />
+
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Nitro Gallery</Text>
+
+        <Gallery
+          actions={actions}
+          loop
+          onDismiss={(payload) => {
+            console.log('dismissed at', payload.index)
+          }}
+          onActionPress={(actionId, payload) => {
+            console.log('action', actionId, 'at', payload.index)
+          }}
+          onIndexChange={(payload) => {
+            console.log('index changed to', payload.index)
+          }}
+          onShow={() => {
+            console.log('gallery shown')
+          }}
+          urls={urls}
+        >
+          <View style={styles.grid}>
+            {urls.map((url, index) => (
+              <Gallery.Image index={index} key={url} style={styles.thumbnail}>
+                <Image contentFit="cover" source={url} style={styles.image} />
+              </Gallery.Image>
+            ))}
+          </View>
+        </Gallery>
+
+        <TouchableOpacity
+          onPress={() => {
+            Gallery.open({
+              actions,
+              indicatorColor: '#ffd60a',
+              initialIndex: 1,
+              loop: true,
+              urls,
+            })
+          }}
+          style={styles.button}
+        >
+          <Text style={styles.label}>Open programmatically</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            Gallery.open({
+              origin: {
+                height: 100,
+                width: 100,
+                x: 40,
+                y: 400,
+              },
+              urls: [urls[0] ?? ''],
+            })
+          }}
+          style={styles.button}
+        >
+          <Text style={styles.label}>Open from a rect</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#1e1e1e',
+    borderCurve: 'continuous',
+    borderRadius: 12,
+    marginTop: 16,
+    padding: 16,
+  },
+  content: {
+    padding: 20,
+    paddingTop: 80,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  image: {
+    flex: 1,
+  },
+  label: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  main: {
+    backgroundColor: '#000000',
+    flex: 1,
+  },
+  thumbnail: {
+    aspectRatio: 1,
+    borderCurve: 'continuous',
+    borderRadius: 8,
+    overflow: 'hidden',
+    width: '32%',
+  },
+  title: {
+    color: '#ffffff',
+    fontSize: 32,
+    fontWeight: '700',
+    marginBottom: 24,
+  },
+})
