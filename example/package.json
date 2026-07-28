@@ -4,9 +4,9 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "expo start --dev-client",
     "ios": "expo run:ios",
-    "pod": "expo prebuild --platform ios"
+    "pod": "expo prebuild --platform ios",
+    "start": "expo start --dev-client"
   },
   "dependencies": {
     "expo": "~57.0.8",
