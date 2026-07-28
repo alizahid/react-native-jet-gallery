@@ -29,11 +29,13 @@
 ## Installation
 
 ```sh
-npm install react-native-jet-gallery react-native-nitro-modules
+npm install react-native-jet-gallery react-native-nitro-modules react-native-gesture-handler
 cd ios && pod install
 ```
 
-Using Expo? `npx expo prebuild` handles the pod install.
+Using Expo? `npx expo prebuild` handles the pod install, and [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/) is already part of every Expo project.
+
+`Gallery.Image` renders a gesture-handler `Pressable`, so your app must be wrapped in a `GestureHandlerRootView` — [expo-router](https://docs.expo.dev/router/introduction/) and react-navigation apps already have one.
 
 ## Declarative API
 
@@ -81,7 +83,7 @@ function Grid() {
 
 ### Inside a gesture-handler pressable
 
-When [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/) is installed, `Gallery.Image` automatically uses its `Pressable`, so thumbnails keep working when nested inside gesture-handler pressables and touchables (the innermost pressable wins):
+`Gallery.Image` uses gesture-handler's `Pressable`, so thumbnails keep working when nested inside gesture-handler pressables and touchables — the innermost pressable wins:
 
 ```tsx
 import { Pressable } from 'react-native-gesture-handler'
@@ -94,8 +96,6 @@ import { Pressable } from 'react-native-gesture-handler'
   </Gallery.Image>
 </Pressable>
 ```
-
-No configuration needed — gesture-handler is an optional peer dependency, and apps without it fall back to the core `Pressable`.
 
 ## Imperative API
 

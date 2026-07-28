@@ -9,32 +9,17 @@ import {
 } from 'react'
 import {
   findNodeHandle,
-  Pressable,
   type StyleProp,
   type View,
   type ViewStyle,
 } from 'react-native'
+// The core Pressable never receives the touch when it is nested inside a
+// gesture-handler pressable; gesture-handler's own Pressable nests correctly,
+// with the innermost one winning.
+import { Pressable } from 'react-native-gesture-handler'
 import { open, setDismissTarget } from './open'
 import type { TransitionRect } from './specs/GalleryController.nitro'
 import type { GalleryEventPayload, GalleryOptions } from './types'
-
-declare const require: (id: string) => { Pressable?: typeof Pressable }
-
-/**
- * The core Pressable never receives the touch when it is nested inside a
- * react-native-gesture-handler pressable, so when gesture-handler is
- * installed, Gallery.Image uses its Pressable instead — nested gesture-
- * handler pressables resolve correctly, with the innermost one winning.
- * Metro treats a try/catch require as optional, so apps without
- * gesture-handler are unaffected.
- */
-const NativePressable: typeof Pressable = (() => {
-  try {
-    return require('react-native-gesture-handler').Pressable ?? Pressable
-  } catch {
-    return Pressable
-  }
-})()
 
 type GalleryContextValue = {
   hiddenIndex: number | null
@@ -157,7 +142,7 @@ export function GalleryImage({
   )
 
   return (
-    <NativePressable
+    <Pressable
       collapsable={false}
       disabled={disabled}
       onLongPress={
@@ -170,7 +155,7 @@ export function GalleryImage({
       style={[style, hiddenIndex === index && styles.hidden]}
     >
       {children}
-    </NativePressable>
+    </Pressable>
   )
 }
 
