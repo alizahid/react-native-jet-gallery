@@ -15,7 +15,7 @@
     "expo-status-bar": "~57.0.1",
     "pressto": "^0.7.0",
     "react": "19.2.3",
-    "react-native": "0.86.0",
+    "react-native": "0.86.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-jet-gallery": "file:..",
     "react-native-nitro-modules": "^0.36.1",
