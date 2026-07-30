@@ -43,7 +43,10 @@ Using Expo? `npx expo prebuild` handles the pod install, and [react-native-gestu
 import { Image } from 'expo-image'
 import { Gallery } from 'react-native-jet-gallery'
 
-const urls = ['https://example.com/1.jpg', 'https://example.com/2.gif']
+const images = [
+  { url: 'https://example.com/1.jpg', width: 1200, height: 800 },
+  { url: 'https://example.com/2.gif' }, // dimensions are optional
+]
 
 function Grid() {
   return (
@@ -58,11 +61,11 @@ function Grid() {
       ]}
       loop
       onDismiss={(payload) => console.log('closed at', payload.index)}
-      urls={urls}
+      images={images}
     >
-      {urls.map((url, index) => (
-        <Gallery.Image index={index} key={url} style={styles.thumbnail}>
-          <Image source={url} style={styles.image} />
+      {images.map((image, index) => (
+        <Gallery.Image index={index} key={image.url} style={styles.thumbnail}>
+          <Image source={image.url} style={styles.image} />
         </Gallery.Image>
       ))}
     </Gallery>
@@ -76,7 +79,7 @@ function Grid() {
 
 | Prop | Type | Description |
 | --- | --- | --- |
-| `index` | `number` | Index of this thumbnail in the surrounding gallery's `urls` |
+| `index` | `number` | Index of this thumbnail in the surrounding gallery's `images` |
 | `onLongPress` | `(payload) => void` | Long press on the thumbnail; payload is `{ index, url }` |
 | `disabled` | `boolean` | Disables the built-in pressable |
 | `style` | `StyleProp<ViewStyle>` | Style for the wrapping pressable |
@@ -103,11 +106,11 @@ import { Pressable } from 'react-native-gesture-handler'
 import { Gallery } from 'react-native-jet-gallery'
 
 // Plain fade-in
-Gallery.open({ urls, initialIndex: 2, loop: true })
+Gallery.open({ images, initialIndex: 2, loop: true })
 
 // Transition from a rect (window coordinates, in points)
 Gallery.open({
-  urls: ['https://example.com/1.jpg'],
+  images: [{ url: 'https://example.com/1.jpg', width: 1200, height: 800 }],
   origin: { x: 40, y: 400, width: 100, height: 100, borderRadius: 12 },
 })
 
@@ -119,7 +122,7 @@ Gallery.isVisible()
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `urls` | `string[]` | Image URLs (http/https/file) |
+| `images` | `GalleryImageSource[]` | Images to show: `{ url, width?, height? }` — `url` is http/https/file; the optional intrinsic dimensions let the open transition land on the image's real aspect ratio before the full image has loaded |
 | `initialIndex` | `number` | Page to open at (imperative only; `Gallery.Image` uses its `index`) |
 | `loop` | `boolean` | Wrap around past the first/last image |
 | `origin` | `TransitionRect` | Rect to transition from/back to (imperative only) |

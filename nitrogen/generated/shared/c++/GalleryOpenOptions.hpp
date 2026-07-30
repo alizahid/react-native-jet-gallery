@@ -28,6 +28,8 @@
 #error NitroModules cannot be found! Are you sure you installed NitroModules properly?
 #endif
 
+// Forward declaration of `GalleryImageSource` to properly resolve imports.
+namespace margelo::nitro::jetgallery { struct GalleryImageSource; }
 // Forward declaration of `TransitionRect` to properly resolve imports.
 namespace margelo::nitro::jetgallery { struct TransitionRect; }
 // Forward declaration of `GalleryActionSpec` to properly resolve imports.
@@ -37,11 +39,12 @@ namespace margelo::nitro::jetgallery { struct GalleryEventPayload; }
 // Forward declaration of `GalleryActionPayload` to properly resolve imports.
 namespace margelo::nitro::jetgallery { struct GalleryActionPayload; }
 
-#include <string>
+#include "GalleryImageSource.hpp"
 #include <vector>
 #include <optional>
 #include "TransitionRect.hpp"
 #include "GalleryActionSpec.hpp"
+#include <string>
 #include <functional>
 #include "GalleryEventPayload.hpp"
 #include "GalleryActionPayload.hpp"
@@ -53,7 +56,7 @@ namespace margelo::nitro::jetgallery {
    */
   struct GalleryOpenOptions final {
   public:
-    std::vector<std::string> urls     SWIFT_PRIVATE;
+    std::vector<GalleryImageSource> images     SWIFT_PRIVATE;
     std::optional<double> initialIndex     SWIFT_PRIVATE;
     std::optional<bool> loop     SWIFT_PRIVATE;
     std::optional<TransitionRect> origin     SWIFT_PRIVATE;
@@ -69,7 +72,7 @@ namespace margelo::nitro::jetgallery {
 
   public:
     GalleryOpenOptions() = default;
-    explicit GalleryOpenOptions(std::vector<std::string> urls, std::optional<double> initialIndex, std::optional<bool> loop, std::optional<TransitionRect> origin, std::optional<double> sourceTag, std::optional<std::vector<GalleryActionSpec>> actions, std::optional<std::string> backgroundColor, std::optional<std::string> indicatorColor, std::optional<std::string> indicatorInactiveColor, std::optional<std::function<void()>> onShow, std::optional<std::function<void(const GalleryEventPayload& /* payload */)>> onIndexChange, std::optional<std::function<void(const GalleryActionPayload& /* payload */)>> onAction, std::optional<std::function<void(const GalleryEventPayload& /* payload */)>> onDismiss): urls(urls), initialIndex(initialIndex), loop(loop), origin(origin), sourceTag(sourceTag), actions(actions), backgroundColor(backgroundColor), indicatorColor(indicatorColor), indicatorInactiveColor(indicatorInactiveColor), onShow(onShow), onIndexChange(onIndexChange), onAction(onAction), onDismiss(onDismiss) {}
+    explicit GalleryOpenOptions(std::vector<GalleryImageSource> images, std::optional<double> initialIndex, std::optional<bool> loop, std::optional<TransitionRect> origin, std::optional<double> sourceTag, std::optional<std::vector<GalleryActionSpec>> actions, std::optional<std::string> backgroundColor, std::optional<std::string> indicatorColor, std::optional<std::string> indicatorInactiveColor, std::optional<std::function<void()>> onShow, std::optional<std::function<void(const GalleryEventPayload& /* payload */)>> onIndexChange, std::optional<std::function<void(const GalleryActionPayload& /* payload */)>> onAction, std::optional<std::function<void(const GalleryEventPayload& /* payload */)>> onDismiss): images(images), initialIndex(initialIndex), loop(loop), origin(origin), sourceTag(sourceTag), actions(actions), backgroundColor(backgroundColor), indicatorColor(indicatorColor), indicatorInactiveColor(indicatorInactiveColor), onShow(onShow), onIndexChange(onIndexChange), onAction(onAction), onDismiss(onDismiss) {}
 
   public:
     // GalleryOpenOptions is not equatable because these properties are not equatable: onShow, onIndexChange, onAction, onDismiss
@@ -85,7 +88,7 @@ namespace margelo::nitro {
     static inline margelo::nitro::jetgallery::GalleryOpenOptions fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::jetgallery::GalleryOpenOptions(
-        JSIConverter<std::vector<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "urls"))),
+        JSIConverter<std::vector<margelo::nitro::jetgallery::GalleryImageSource>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "images"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "initialIndex"))),
         JSIConverter<std::optional<bool>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "loop"))),
         JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin"))),
@@ -102,7 +105,7 @@ namespace margelo::nitro {
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryOpenOptions& arg) {
       jsi::Object obj(runtime);
-      obj.setProperty(runtime, PropNameIDCache::get(runtime, "urls"), JSIConverter<std::vector<std::string>>::toJSI(runtime, arg.urls));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "images"), JSIConverter<std::vector<margelo::nitro::jetgallery::GalleryImageSource>>::toJSI(runtime, arg.images));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "initialIndex"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.initialIndex));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "loop"), JSIConverter<std::optional<bool>>::toJSI(runtime, arg.loop));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "origin"), JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::toJSI(runtime, arg.origin));
@@ -125,7 +128,7 @@ namespace margelo::nitro {
       if (!nitro::isPlainObject(runtime, obj)) {
         return false;
       }
-      if (!JSIConverter<std::vector<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "urls")))) return false;
+      if (!JSIConverter<std::vector<margelo::nitro::jetgallery::GalleryImageSource>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "images")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "initialIndex")))) return false;
       if (!JSIConverter<std::optional<bool>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "loop")))) return false;
       if (!JSIConverter<std::optional<margelo::nitro::jetgallery::TransitionRect>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "origin")))) return false;

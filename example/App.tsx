@@ -18,7 +18,11 @@ import {
   GestureHandlerRootView,
   Pressable as GesturePressable,
 } from 'react-native-gesture-handler'
-import { Gallery, type GalleryAction } from 'react-native-jet-gallery'
+import {
+  Gallery,
+  type GalleryAction,
+  type GalleryImageSource,
+} from 'react-native-jet-gallery'
 
 /**
  * Mimics Acorn's post card: a horizontal swipe-actions Pan wrapping a pressto
@@ -69,14 +73,19 @@ const parents: Array<{
   },
 ]
 
-const urls = [
-  'https://picsum.photos/id/10/1200/800',
-  'https://picsum.photos/id/1015/900/1600',
-  'https://picsum.photos/id/1025/1200/1200',
-  'https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif',
-  'https://picsum.photos/id/1039/1600/900',
-  'https://picsum.photos/id/1043/800/1200',
+const images: GalleryImageSource[] = [
+  { height: 800, url: 'https://picsum.photos/id/10/1200/800', width: 1200 },
+  { height: 1600, url: 'https://picsum.photos/id/1015/900/1600', width: 900 },
+  { height: 1200, url: 'https://picsum.photos/id/1025/1200/1200', width: 1200 },
+  // No dimensions: the transition falls back to the thumbnail's aspect.
+  {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif',
+  },
+  { height: 900, url: 'https://picsum.photos/id/1039/1600/900', width: 1600 },
+  { height: 1200, url: 'https://picsum.photos/id/1043/800/1200', width: 800 },
 ]
+
+const cardImages = images.slice(4, 6)
 
 const actions: GalleryAction[] = [
   {
@@ -120,19 +129,23 @@ export default function App() {
           onShow={() => {
             console.log('gallery shown')
           }}
-          urls={urls}
+          images={images}
         >
           <View style={styles.grid}>
-            {urls.map((url, index) => (
+            {images.map((image, index) => (
               <Gallery.Image
                 index={index}
-                key={url}
+                key={image.url}
                 onLongPress={(payload) => {
                   Alert.alert('Long press', `${payload.index}: ${payload.url}`)
                 }}
                 style={styles.thumbnail}
               >
-                <Image contentFit="cover" source={url} style={styles.image} />
+                <Image
+                  contentFit="cover"
+                  source={image.url}
+                  style={styles.image}
+                />
               </Gallery.Image>
             ))}
           </View>
@@ -143,11 +156,11 @@ export default function App() {
             <Text style={styles.subtitle}>Inside a {label}</Text>
 
             <Gallery
+              images={cardImages}
               loop={false}
               onShow={() => {
                 console.log(`${key} gallery shown`)
               }}
-              urls={[urls[4] ?? '', urls[5] ?? '']}
             >
               <Component
                 onPress={() => {
@@ -161,10 +174,10 @@ export default function App() {
                 </Text>
 
                 <View style={styles.row}>
-                  {[urls[4] ?? '', urls[5] ?? ''].map((url, index) => (
+                  {cardImages.map((image, index) => (
                     <Gallery.Image
                       index={index}
-                      key={url}
+                      key={image.url}
                       onLongPress={(payload) => {
                         console.log(`${key} long press at ${payload.index}`)
                       }}
@@ -172,7 +185,7 @@ export default function App() {
                     >
                       <Image
                         contentFit="cover"
-                        source={url}
+                        source={image.url}
                         style={styles.image}
                       />
                     </Gallery.Image>
@@ -187,10 +200,10 @@ export default function App() {
           onPress={() => {
             Gallery.open({
               actions,
+              images,
               indicatorColor: '#ffd60a',
               initialIndex: 1,
               loop: true,
-              urls,
             })
           }}
           style={styles.button}
@@ -201,13 +214,13 @@ export default function App() {
         <TouchableOpacity
           onPress={() => {
             Gallery.open({
+              images: images.slice(0, 1),
               origin: {
                 height: 100,
                 width: 100,
                 x: 40,
                 y: 400,
               },
-              urls: [urls[0] ?? ''],
             })
           }}
           style={styles.button}

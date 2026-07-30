@@ -12,6 +12,7 @@ final class GalleryViewController: UIViewController {
 
   private var chromeHidden = false
   private var didFireShow = false
+  private var presentOverlay: UIView?
 
   init(session: GallerySession) {
     self.session = session
@@ -130,6 +131,40 @@ final class GalleryViewController: UIViewController {
     }
   }
 
+  // MARK: - Present overlay
+
+  /// Adopts the present transition's flying snapshot so the switch to the
+  /// real image is a crossfade instead of a pop. The overlay fades out once
+  /// the current page's image loads, the user interacts, or a timeout hits —
+  /// whichever comes first.
+  func adoptPresentOverlay(_ overlay: UIView) {
+    overlay.isUserInteractionEnabled = false
+    presentOverlay = overlay
+    view.insertSubview(overlay, aboveSubview: pager)
+
+    if pager.currentCell?.currentImage != nil {
+      fadePresentOverlay()
+    } else {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
+        self?.fadePresentOverlay()
+      }
+    }
+  }
+
+  private func fadePresentOverlay() {
+    guard let overlay = presentOverlay else {
+      return
+    }
+
+    presentOverlay = nil
+
+    UIView.animate(withDuration: 0.18) {
+      overlay.alpha = 0
+    } completion: { _ in
+      overlay.removeFromSuperview()
+    }
+  }
+
   private func setChromeHidden(_ hidden: Bool, animated: Bool) {
     chromeHidden = hidden
 
@@ -149,11 +184,18 @@ final class GalleryViewController: UIViewController {
 
     switch pan.state {
     case .changed:
+      fadePresentOverlay()
+
       let progress = min(max(abs(translation.y) / 320, 0), 1)
+
+      // The thumbnail's radius fades in early (fully in by a third of the
+      // drag), so the image already looks like the card it will land on.
+      let targetRadius = session.dismissTarget(at: currentIndex)?.borderRadius ?? 0
 
       pager.currentCell?.setDismissTransform(
         translation: translation,
-        scale: 1 - progress * 0.35
+        scale: 1 - progress * 0.35,
+        cornerRadius: min(progress * 3, 1) * targetRadius
       )
       dimView.alpha = 1 - progress * 0.6
       toolbar.alpha = chromeHidden ? 0 : max(1 - progress * 3, 0)
@@ -207,7 +249,14 @@ extension GalleryViewController: GalleryPagerViewDelegate {
   }
 
   func pager(_ pager: GalleryPagerView, didScrollToProgress progress: CGFloat) {
+    fadePresentOverlay()
     indicator.setProgress(progress)
+  }
+
+  func pager(_ pager: GalleryPagerView, didLoadImageAt index: Int) {
+    if index == currentIndex {
+      fadePresentOverlay()
+    }
   }
 
   func pagerDidSingleTap(_ pager: GalleryPagerView) {

@@ -38,6 +38,7 @@ struct GalleryActionItem {
 
 /// Holds the options, callbacks, and mutable state for one gallery presentation.
 final class GallerySession {
+  let images: [GalleryImageSource]
   let urls: [String]
   let initialIndex: Int
   let loop: Bool
@@ -50,6 +51,7 @@ final class GallerySession {
   private let sourceTag: Double?
   private(set) weak var sourceView: UIView?
   private var sourceViewAlpha: CGFloat = 1
+  private var sourceViewHidden = false
 
   var dismissTargets: [Int: GalleryDismissTarget] = [:]
 
@@ -65,10 +67,11 @@ final class GallerySession {
   private var didTeardown = false
 
   init(options: GalleryOpenOptions) {
-    let urls = options.urls
+    let images = options.images
 
-    self.urls = urls
-    self.initialIndex = min(max(options.initialIndex?.asSafeInt ?? 0, 0), max(urls.count - 1, 0))
+    self.images = images
+    self.urls = images.map(\.url)
+    self.initialIndex = min(max(options.initialIndex?.asSafeInt ?? 0, 0), max(images.count - 1, 0))
     self.loop = options.loop ?? false
     self.actions = (options.actions ?? []).map {
       GalleryActionItem(id: $0.id, title: $0.title, icon: $0.icon)
@@ -93,6 +96,17 @@ final class GallerySession {
     return urls[index]
   }
 
+  /// The caller-declared intrinsic size for `index`, if it is usable.
+  func imageSize(at index: Int) -> CGSize? {
+    guard images.indices.contains(index),
+          let width = images[index].width, let height = images[index].height,
+          width.isFinite, height.isFinite, width > 0, height > 0 else {
+      return nil
+    }
+
+    return CGSize(width: width, height: height)
+  }
+
   private func payload(at index: Int) -> GalleryEventPayload {
     return GalleryEventPayload(index: Double(index), url: url(at: index))
   }
@@ -106,16 +120,26 @@ final class GallerySession {
     sourceView = GallerySourceViewFinder.find(tag: tag)
   }
 
+  // Hide/restore are guarded by `sourceViewHidden` so a re-hide never captures
+  // our own (or a JS-written) zero alpha as the value to restore. The capture
+  // happens synchronously in the paging callback, before the async JS
+  // onIndexChange handler can write opacity to the same view.
   func hideSourceView() {
-    guard let view = sourceView else {
+    guard let view = sourceView, !sourceViewHidden else {
       return
     }
 
+    sourceViewHidden = true
     sourceViewAlpha = view.alpha
     view.alpha = 0
   }
 
   func restoreSourceView() {
+    guard sourceViewHidden else {
+      return
+    }
+
+    sourceViewHidden = false
     sourceView?.alpha = sourceViewAlpha
   }
 
@@ -144,6 +168,15 @@ final class GallerySession {
   }
 
   func fireIndexChange(at index: Int) {
+    // The pressed thumbnail only stays hidden while the gallery is on its
+    // page. Paging away restores it, so a pan or dismiss at another index
+    // reveals the full list with only the current sibling hidden (by JS).
+    if index == initialIndex {
+      hideSourceView()
+    } else {
+      restoreSourceView()
+    }
+
     onIndexChange?(payload(at: index))
   }
 

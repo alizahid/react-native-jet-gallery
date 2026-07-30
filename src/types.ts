@@ -1,9 +1,10 @@
 import type {
   GalleryEventPayload,
+  GalleryImageSource,
   TransitionRect,
 } from './specs/GalleryController.nitro'
 
-export type { GalleryEventPayload, TransitionRect }
+export type { GalleryEventPayload, GalleryImageSource, TransitionRect }
 
 export interface GalleryAction {
   id: string
@@ -30,7 +31,7 @@ export interface GalleryOptions {
 }
 
 export interface GalleryOpenOptions extends GalleryOptions {
-  urls: string[]
+  images: GalleryImageSource[]
   initialIndex?: number
   /**
    * Frame to animate from, in window coordinates (points). When set, the

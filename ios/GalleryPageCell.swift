@@ -16,6 +16,7 @@ final class GalleryPageCell: UICollectionViewCell {
   ]
 
   var onSingleTap: (() -> Void)?
+  var onImageLoad: (() -> Void)?
 
   private let scrollView = UIScrollView()
   private let imageView = SDAnimatedImageView()
@@ -34,6 +35,7 @@ final class GalleryPageCell: UICollectionViewCell {
 
     imageView.contentMode = .scaleAspectFill
     imageView.clipsToBounds = true
+    imageView.layer.cornerCurve = .continuous
     scrollView.addSubview(imageView)
 
     let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
@@ -56,8 +58,11 @@ final class GalleryPageCell: UICollectionViewCell {
     imageView.sd_cancelCurrentImageLoad()
     imageView.image = nil
     imageView.transform = .identity
+    imageView.layer.cornerRadius = 0
+    dismissCornerRadius = 0
     imageSize = .zero
     onSingleTap = nil
+    onImageLoad = nil
 
     // Clear zoom state so a reused cell whose image is still loading doesn't
     // report isZoomed and block the pan-to-dismiss gesture.
@@ -82,6 +87,8 @@ final class GalleryPageCell: UICollectionViewCell {
   func configure(url: String) {
     imageSize = .zero
     imageView.transform = .identity
+    imageView.layer.cornerRadius = 0
+    dismissCornerRadius = 0
 
     let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url)
 
@@ -98,6 +105,7 @@ final class GalleryPageCell: UICollectionViewCell {
 
       self.imageSize = image.size
       self.layoutImage()
+      self.onImageLoad?()
     }
   }
 
@@ -154,13 +162,24 @@ final class GalleryPageCell: UICollectionViewCell {
     return imageView.convert(imageView.bounds, to: view)
   }
 
-  func setDismissTransform(translation: CGPoint, scale: CGFloat) {
+  /// Visual corner radius applied by the interactive drag, for the dismiss
+  /// animator to start its flying copy from.
+  private(set) var dismissCornerRadius: CGFloat = 0
+
+  func setDismissTransform(translation: CGPoint, scale: CGFloat, cornerRadius: CGFloat) {
+    dismissCornerRadius = cornerRadius
+
     imageView.transform = CGAffineTransform(translationX: translation.x, y: translation.y)
       .scaledBy(x: scale, y: scale)
+    // The transform scales the layer's radius too, so divide to keep the
+    // on-screen radius equal to cornerRadius.
+    imageView.layer.cornerRadius = scale > 0 ? cornerRadius / scale : cornerRadius
   }
 
   func resetDismissTransform() {
+    dismissCornerRadius = 0
     imageView.transform = .identity
+    imageView.layer.cornerRadius = 0
   }
 
   @objc

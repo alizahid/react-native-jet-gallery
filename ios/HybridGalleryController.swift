@@ -26,7 +26,7 @@ class HybridGalleryController: HybridGalleryControllerSpec {
   }
 
   func open(options: GalleryOpenOptions) throws {
-    guard !options.urls.isEmpty else {
+    guard !options.images.isEmpty else {
       options.onDismiss?(GalleryEventPayload(index: 0, url: ""))
       return
     }

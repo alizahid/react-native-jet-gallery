@@ -7,10 +7,10 @@ export function open(options: GalleryOpenOptions): void {
 
   const initialIndex = options.initialIndex ?? 0
 
-  if (!controller || options.urls.length === 0) {
+  if (!controller || options.images.length === 0) {
     options.onDismiss?.({
       index: initialIndex,
-      url: options.urls[initialIndex] ?? '',
+      url: options.images[initialIndex]?.url ?? '',
     })
 
     return

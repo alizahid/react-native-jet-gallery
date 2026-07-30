@@ -10,6 +10,15 @@ export interface TransitionRect {
   borderRadius?: number
 }
 
+export interface GalleryImageSource {
+  /** http/https/file URL. */
+  url: string
+  /** Intrinsic width in pixels; with height, lets the open transition aspect-fit before the full image loads. */
+  width?: number
+  /** Intrinsic height in pixels; with width, lets the open transition aspect-fit before the full image loads. */
+  height?: number
+}
+
 export interface GalleryEventPayload {
   index: number
   url: string
@@ -29,7 +38,7 @@ export interface GalleryActionSpec {
 }
 
 export interface GalleryOpenOptions {
-  urls: string[]
+  images: GalleryImageSource[]
   initialIndex?: number
   loop?: boolean
   /** Present-from rect in window coordinates; omit for a plain fade/zoom. */

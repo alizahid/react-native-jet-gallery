@@ -4,6 +4,7 @@ protocol GalleryPagerViewDelegate: AnyObject {
   func pager(_ pager: GalleryPagerView, didChangeIndex index: Int)
   /** Continuous fractional page position in logical space; wraps when looping. */
   func pager(_ pager: GalleryPagerView, didScrollToProgress progress: CGFloat)
+  func pager(_ pager: GalleryPagerView, didLoadImageAt index: Int)
   func pagerDidSingleTap(_ pager: GalleryPagerView)
 }
 
@@ -164,6 +165,16 @@ extension GalleryPagerView: UICollectionViewDataSource {
         }
 
         self.delegate?.pagerDidSingleTap(self)
+      }
+
+      let logical = logicalIndex(for: indexPath.item)
+
+      cell.onImageLoad = { [weak self] in
+        guard let self else {
+          return
+        }
+
+        self.delegate?.pager(self, didLoadImageAt: logical)
       }
     }
 

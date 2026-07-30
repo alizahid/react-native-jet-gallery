@@ -14,6 +14,8 @@ namespace margelo::nitro::jetgallery { struct GalleryActionPayload; }
 namespace margelo::nitro::jetgallery { struct GalleryActionSpec; }
 // Forward declaration of `GalleryEventPayload` to properly resolve imports.
 namespace margelo::nitro::jetgallery { struct GalleryEventPayload; }
+// Forward declaration of `GalleryImageSource` to properly resolve imports.
+namespace margelo::nitro::jetgallery { struct GalleryImageSource; }
 // Forward declaration of `GalleryOpenOptions` to properly resolve imports.
 namespace margelo::nitro::jetgallery { struct GalleryOpenOptions; }
 // Forward declaration of `HybridGalleryControllerSpec` to properly resolve imports.
@@ -25,6 +27,7 @@ namespace margelo::nitro::jetgallery { struct TransitionRect; }
 #include "GalleryActionPayload.hpp"
 #include "GalleryActionSpec.hpp"
 #include "GalleryEventPayload.hpp"
+#include "GalleryImageSource.hpp"
 #include "GalleryOpenOptions.hpp"
 #include "HybridGalleryControllerSpec.hpp"
 #include "TransitionRect.hpp"

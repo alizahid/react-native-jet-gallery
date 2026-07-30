@@ -51,6 +51,22 @@ private func aspectFitRect(for size: CGSize, in bounds: CGRect) -> CGRect {
   )
 }
 
+private func aspectFillRect(for size: CGSize, in bounds: CGRect) -> CGRect {
+  guard size.width > 0, size.height > 0 else {
+    return bounds
+  }
+
+  let scale = max(bounds.width / size.width, bounds.height / size.height)
+  let filled = CGSize(width: size.width * scale, height: size.height * scale)
+
+  return CGRect(
+    x: bounds.midX - filled.width / 2,
+    y: bounds.midY - filled.height / 2,
+    width: filled.width,
+    height: filled.height
+  )
+}
+
 private func cachedImage(for url: String) -> UIImage? {
   guard let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url) else {
     return nil
@@ -119,15 +135,41 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
     let image = cachedImage(for: session.url(at: session.initialIndex))
 
     var animatedView: UIView?
+    // A snapshot stretches when its bounds change aspect, unlike an image
+    // view's aspect-fill. Snapshots go inside a clipping wrapper and this
+    // keeps a reference so the animation can grow it to fill the target.
+    var fillContent: UIView?
 
-    if startRect != nil {
+    if let start = startRect {
       if image != nil {
         animatedView = makeTransitionImageView(image: image)
-      } else if let sourceView = session.sourceView,
-                let snapshot = sourceView.snapshotView(afterScreenUpdates: false) {
-        snapshot.clipsToBounds = true
-        snapshot.layer.cornerCurve = .continuous
-        animatedView = snapshot
+      } else {
+        var snapshot = session.sourceView?.snapshotView(afterScreenUpdates: false)
+
+        if snapshot == nil, start.width > 0, start.height > 0,
+           let fromView = context.viewController(forKey: .from)?.view {
+          // Imperative opens pass an origin rect but usually no sourceTag, and
+          // on first open the image is not in the memory cache yet — snapshot
+          // the pixels already on screen so the zoom transition still runs
+          // instead of degrading to a fade.
+          snapshot = fromView.resizableSnapshotView(
+            from: fromView.convert(start, from: container),
+            afterScreenUpdates: false,
+            withCapInsets: .zero
+          )
+        }
+
+        if let snapshot {
+          let wrapper = UIView()
+          wrapper.clipsToBounds = true
+          wrapper.layer.cornerCurve = .continuous
+
+          snapshot.frame = CGRect(origin: .zero, size: start.size)
+          wrapper.addSubview(snapshot)
+
+          animatedView = wrapper
+          fillContent = snapshot
+        }
       }
     }
 
@@ -147,8 +189,10 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
 
     session.hideSourceView()
 
+    // The declared size keeps the transition landing on the image's real
+    // aspect even when the full image hasn't loaded yet (snapshot path).
     let target = aspectFitRect(
-      for: image?.size ?? start.size,
+      for: image?.size ?? session.imageSize(at: session.initialIndex) ?? start.size,
       in: container.bounds
     )
 
@@ -167,10 +211,25 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
     ) {
       animated.frame = target
       animated.layer.cornerRadius = 0
+      // The snapshot keeps its own aspect and grows to cover the wrapper, so
+      // a square thumbnail crops into a landscape/portrait target instead of
+      // stretching.
+      fillContent?.frame = aspectFillRect(
+        for: start.size,
+        in: CGRect(origin: .zero, size: target.size)
+      )
       controller.view.alpha = 1
     } completion: { _ in
       controller.pager.alpha = 1
-      animated.removeFromSuperview()
+
+      if fillContent != nil {
+        // Snapshot content doesn't match the real image; let the controller
+        // crossfade it out once the page's image is actually on screen.
+        controller.adoptPresentOverlay(animated)
+      } else {
+        animated.removeFromSuperview()
+      }
+
       context.completeTransition(!context.transitionWasCancelled)
     }
   }
@@ -205,6 +264,9 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
     if let cell, let image = cell.currentImage, let frame = cell.imageFrame(in: container) {
       let view = makeTransitionImageView(image: image)
       view.frame = frame
+      // Pick up the radius the interactive drag left off at, so the flying
+      // copy continues the curve instead of popping back to square.
+      view.layer.cornerRadius = cell.dismissCornerRadius
       animatedView = view
     }
 

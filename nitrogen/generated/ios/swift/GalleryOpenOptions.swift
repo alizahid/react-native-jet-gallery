@@ -18,11 +18,11 @@ public extension GalleryOpenOptions {
   /**
    * Create a new instance of `GalleryOpenOptions`.
    */
-  init(urls: [String], initialIndex: Double?, loop: Bool?, origin: TransitionRect?, sourceTag: Double?, actions: [GalleryActionSpec]?, backgroundColor: String?, indicatorColor: String?, indicatorInactiveColor: String?, onShow: (() -> Void)?, onIndexChange: ((_ payload: GalleryEventPayload) -> Void)?, onAction: ((_ payload: GalleryActionPayload) -> Void)?, onDismiss: ((_ payload: GalleryEventPayload) -> Void)?) {
-    self.init({ () -> bridge.std__vector_std__string_ in
-      var __vector = bridge.create_std__vector_std__string_(urls.count)
-      for __item in urls {
-        __vector.push_back(std.string(__item))
+  init(images: [GalleryImageSource], initialIndex: Double?, loop: Bool?, origin: TransitionRect?, sourceTag: Double?, actions: [GalleryActionSpec]?, backgroundColor: String?, indicatorColor: String?, indicatorInactiveColor: String?, onShow: (() -> Void)?, onIndexChange: ((_ payload: GalleryEventPayload) -> Void)?, onAction: ((_ payload: GalleryActionPayload) -> Void)?, onDismiss: ((_ payload: GalleryEventPayload) -> Void)?) {
+    self.init({ () -> bridge.std__vector_GalleryImageSource_ in
+      var __vector = bridge.create_std__vector_GalleryImageSource_(images.count)
+      for __item in images {
+        __vector.push_back(__item)
       }
       return __vector
     }(), { () -> bridge.std__optional_double_ in
@@ -119,8 +119,8 @@ public extension GalleryOpenOptions {
   }
 
   @inline(__always)
-  var urls: [String] {
-    return self.__urls.map({ __item in String(__item) })
+  var images: [GalleryImageSource] {
+    return self.__images.map({ __item in __item })
   }
   
   @inline(__always)

@@ -12,6 +12,7 @@ export type { GalleryImageProps, GalleryProps } from './gallery'
 export type {
   GalleryAction,
   GalleryEventPayload,
+  GalleryImageSource,
   GalleryOpenOptions,
   GalleryOptions,
   TransitionRect,

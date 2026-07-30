@@ -14,6 +14,8 @@ namespace margelo::nitro::jetgallery { struct GalleryActionPayload; }
 namespace margelo::nitro::jetgallery { struct GalleryActionSpec; }
 // Forward declaration of `GalleryEventPayload` to properly resolve imports.
 namespace margelo::nitro::jetgallery { struct GalleryEventPayload; }
+// Forward declaration of `GalleryImageSource` to properly resolve imports.
+namespace margelo::nitro::jetgallery { struct GalleryImageSource; }
 // Forward declaration of `HybridGalleryControllerSpec` to properly resolve imports.
 namespace margelo::nitro::jetgallery { class HybridGalleryControllerSpec; }
 // Forward declaration of `TransitionRect` to properly resolve imports.
@@ -27,6 +29,7 @@ namespace JetGallery { class HybridGalleryControllerSpec_cxx; }
 #include "GalleryActionPayload.hpp"
 #include "GalleryActionSpec.hpp"
 #include "GalleryEventPayload.hpp"
+#include "GalleryImageSource.hpp"
 #include "HybridGalleryControllerSpec.hpp"
 #include "TransitionRect.hpp"
 #include <NitroModules/Result.hpp>
@@ -43,17 +46,6 @@ namespace JetGallery { class HybridGalleryControllerSpec_cxx; }
  */
 namespace margelo::nitro::jetgallery::bridge::swift {
 
-  // pragma MARK: std::vector<std::string>
-  /**
-   * Specialized version of `std::vector<std::string>`.
-   */
-  using std__vector_std__string_ = std::vector<std::string>;
-  inline std::vector<std::string> create_std__vector_std__string_(size_t size) noexcept {
-    std::vector<std::string> vector;
-    vector.reserve(size);
-    return vector;
-  }
-  
   // pragma MARK: std::optional<double>
   /**
    * Specialized version of `std::optional<double>`.
@@ -67,6 +59,17 @@ namespace margelo::nitro::jetgallery::bridge::swift {
   }
   inline double get_std__optional_double_(const std::optional<double>& optional) noexcept {
     return optional.value();
+  }
+  
+  // pragma MARK: std::vector<GalleryImageSource>
+  /**
+   * Specialized version of `std::vector<GalleryImageSource>`.
+   */
+  using std__vector_GalleryImageSource_ = std::vector<GalleryImageSource>;
+  inline std::vector<GalleryImageSource> create_std__vector_GalleryImageSource_(size_t size) noexcept {
+    std::vector<GalleryImageSource> vector;
+    vector.reserve(size);
+    return vector;
   }
   
   // pragma MARK: std::optional<bool>

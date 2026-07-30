@@ -10,6 +10,7 @@ import {
 import {
   findNodeHandle,
   type StyleProp,
+  StyleSheet,
   type View,
   type ViewStyle,
 } from 'react-native'
@@ -19,40 +20,52 @@ import {
 import { Pressable } from 'react-native-gesture-handler'
 import { open, setDismissTarget } from './open'
 import type { TransitionRect } from './specs/GalleryController.nitro'
-import type { GalleryEventPayload, GalleryOptions } from './types'
+import type {
+  GalleryEventPayload,
+  GalleryImageSource,
+  GalleryOptions,
+} from './types'
+
+type RegistryEntry = {
+  borderRadius?: number
+  view: View
+}
 
 type GalleryContextValue = {
   hiddenIndex: number | null
   openAt: (index: number) => void
-  register: (index: number, view: View | null) => void
+  register: (index: number, view: View | null, borderRadius?: number) => void
   urlAt: (index: number) => string
 }
 
 const GalleryContext = createContext<GalleryContextValue | null>(null)
 
 export interface GalleryProps extends GalleryOptions {
-  urls: string[]
+  images: GalleryImageSource[]
   children: ReactNode
 }
 
-export function GalleryRoot({ urls, children, ...options }: GalleryProps) {
-  const registry = useRef(new Map<number, View>())
+export function GalleryRoot({ images, children, ...options }: GalleryProps) {
+  const registry = useRef(new Map<number, RegistryEntry>())
 
   const [hiddenIndex, setHiddenIndex] = useState<number | null>(null)
 
-  const urlsRef = useRef(urls)
-  urlsRef.current = urls
+  const imagesRef = useRef(images)
+  imagesRef.current = images
 
   const optionsRef = useRef(options)
   optionsRef.current = options
 
-  const register = useCallback((index: number, view: View | null) => {
-    if (view) {
-      registry.current.set(index, view)
-    } else {
-      registry.current.delete(index)
-    }
-  }, [])
+  const register = useCallback(
+    (index: number, view: View | null, borderRadius?: number) => {
+      if (view) {
+        registry.current.set(index, { borderRadius, view })
+      } else {
+        registry.current.delete(index)
+      }
+    },
+    []
+  )
 
   const openAt = useCallback((index: number) => {
     // The pressed thumbnail is hidden natively (alpha) while presented, so JS
@@ -62,18 +75,24 @@ export function GalleryRoot({ urls, children, ...options }: GalleryProps) {
     const launch = (origin?: TransitionRect, sourceTag?: number) => {
       open({
         ...optionsRef.current,
+        images: imagesRef.current,
         initialIndex: index,
         origin,
         sourceTag,
-        urls: urlsRef.current,
         onIndexChange: (payload) => {
           const sibling = registry.current.get(payload.index)
 
           if (sibling) {
             setHiddenIndex(payload.index)
 
-            sibling.measureInWindow((x, y, width, height) => {
-              setDismissTarget(payload.index, { x, y, width, height })
+            sibling.view.measureInWindow((x, y, width, height) => {
+              setDismissTarget(payload.index, {
+                borderRadius: sibling.borderRadius,
+                height,
+                width,
+                x,
+                y,
+              })
             })
           } else {
             setHiddenIndex(null)
@@ -90,18 +109,24 @@ export function GalleryRoot({ urls, children, ...options }: GalleryProps) {
       })
     }
 
-    const view = registry.current.get(index)
+    const entry = registry.current.get(index)
 
-    if (view && typeof view.measureInWindow === 'function') {
-      view.measureInWindow((x, y, width, height) => {
-        launch({ x, y, width, height }, findNodeHandle(view) ?? undefined)
+    if (entry && typeof entry.view.measureInWindow === 'function') {
+      entry.view.measureInWindow((x, y, width, height) => {
+        launch(
+          { borderRadius: entry.borderRadius, height, width, x, y },
+          findNodeHandle(entry.view) ?? undefined
+        )
       })
     } else {
       launch()
     }
   }, [])
 
-  const urlAt = useCallback((index: number) => urlsRef.current[index] ?? '', [])
+  const urlAt = useCallback(
+    (index: number) => imagesRef.current[index]?.url ?? '',
+    []
+  )
 
   const value = useMemo(
     () => ({ hiddenIndex, openAt, register, urlAt }),
@@ -136,9 +161,17 @@ export function GalleryImage({
 
   const { hiddenIndex, openAt, register, urlAt } = context
 
+  // Only a uniform numeric radius participates in the transition — per-corner
+  // and percentage radii can't be tweened as a single layer.cornerRadius.
+  const flattened = StyleSheet.flatten(style)
+  const borderRadius =
+    typeof flattened?.borderRadius === 'number'
+      ? flattened.borderRadius
+      : undefined
+
   const ref = useCallback(
-    (view: View | null) => register(index, view),
-    [index, register]
+    (view: View | null) => register(index, view, borderRadius),
+    [borderRadius, index, register]
   )
 
   return (
