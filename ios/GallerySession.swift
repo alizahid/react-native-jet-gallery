@@ -36,6 +36,17 @@ struct GalleryActionItem {
   let icon: String
 }
 
+/// An already-decoded bitmap to show for a page before its own load lands.
+struct GalleryPlaceholder {
+  let image: UIImage
+  /// True when `image` is the full-size image, so the page can adopt it
+  /// outright instead of decoding another copy — which also keeps a GIF's
+  /// player instead of restarting it.
+  let isFull: Bool
+  /// Where the thumbnail's GIF is in its loop, so copies pick up mid-loop.
+  let frame: GalleryFramePosition?
+}
+
 /// Holds the options, callbacks, and mutable state for one gallery presentation.
 final class GallerySession {
   let images: [GalleryImageSource]
@@ -50,6 +61,10 @@ final class GallerySession {
 
   private let sourceTag: Double?
   private(set) weak var sourceView: UIView?
+  /// The image view inside the pressed thumbnail, for its bitmap and GIF timing.
+  private(set) weak var sourceImageView: UIImageView?
+  /// The bitmap the pressed thumbnail was showing when the gallery opened.
+  private(set) var sourceImage: UIImage?
   private var sourceViewAlpha: CGFloat = 1
   private var sourceViewHidden = false
 
@@ -96,6 +111,46 @@ final class GallerySession {
     return urls[index]
   }
 
+  /// The caller-declared smaller URL for `index` (the thumbnail on screen).
+  func thumbnail(at index: Int) -> String? {
+    guard images.indices.contains(index), let thumbnail = images[index].thumbnail,
+          !thumbnail.isEmpty else {
+      return nil
+    }
+
+    return thumbnail
+  }
+
+  /// The best already-decoded bitmap for `index`: the full image if any
+  /// SDWebImage client has it in memory, else the thumbnail (by URL, or the
+  /// pixels borrowed from the pressed view). Seeds the page and the open
+  /// transition so they show identical, real pixels until the full image
+  /// loads — instead of a blurry, cropped snapshot of the thumbnail view.
+  func placeholder(at index: Int) -> GalleryPlaceholder? {
+    // Only the pressed thumbnail's timing is known; siblings start fresh.
+    let frame = index == initialIndex ? sourceImageView?.galleryFramePosition : nil
+
+    if let image = GalleryImageCache.memoryImage(for: url(at: index)) {
+      return GalleryPlaceholder(image: image, isFull: true, frame: frame)
+    }
+
+    if let image = GalleryImageCache.memoryImage(for: thumbnail(at: index)) {
+      return GalleryPlaceholder(image: image, isFull: false, frame: frame)
+    }
+
+    guard index == initialIndex, let image = sourceImage else {
+      return nil
+    }
+
+    return GalleryPlaceholder(image: image, isFull: false, frame: frame)
+  }
+
+  /// Hands the flying copy's GIF timing back to the thumbnail on dismiss, so
+  /// the thumbnail doesn't jump to wherever its own loop drifted to.
+  func syncSourceAnimation(to position: GalleryFramePosition?) {
+    (sourceImageView as? SDAnimatedImageView)?.seek(to: position)
+  }
+
   /// The caller-declared intrinsic size for `index`, if it is usable.
   func imageSize(at index: Int) -> CGSize? {
     guard images.indices.contains(index),
@@ -118,6 +173,8 @@ final class GallerySession {
     }
 
     sourceView = GallerySourceViewFinder.find(tag: tag)
+    sourceImageView = sourceView.flatMap { GalleryImageCache.displayedImageView(in: $0) }
+    sourceImage = sourceImageView?.image
   }
 
   // Hide/restore are guarded by `sourceViewHidden` so a re-hide never captures

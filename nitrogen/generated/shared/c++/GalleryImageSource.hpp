@@ -41,12 +41,13 @@ namespace margelo::nitro::jetgallery {
   struct GalleryImageSource final {
   public:
     std::string url     SWIFT_PRIVATE;
+    std::optional<std::string> thumbnail     SWIFT_PRIVATE;
     std::optional<double> width     SWIFT_PRIVATE;
     std::optional<double> height     SWIFT_PRIVATE;
 
   public:
     GalleryImageSource() = default;
-    explicit GalleryImageSource(std::string url, std::optional<double> width, std::optional<double> height): url(url), width(width), height(height) {}
+    explicit GalleryImageSource(std::string url, std::optional<std::string> thumbnail, std::optional<double> width, std::optional<double> height): url(url), thumbnail(thumbnail), width(width), height(height) {}
 
   public:
     friend bool operator==(const GalleryImageSource& lhs, const GalleryImageSource& rhs) = default;
@@ -63,6 +64,7 @@ namespace margelo::nitro {
       jsi::Object obj = arg.asObject(runtime);
       return margelo::nitro::jetgallery::GalleryImageSource(
         JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "url"))),
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "thumbnail"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "width"))),
         JSIConverter<std::optional<double>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "height")))
       );
@@ -70,6 +72,7 @@ namespace margelo::nitro {
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const margelo::nitro::jetgallery::GalleryImageSource& arg) {
       jsi::Object obj(runtime);
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "url"), JSIConverter<std::string>::toJSI(runtime, arg.url));
+      obj.setProperty(runtime, PropNameIDCache::get(runtime, "thumbnail"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.thumbnail));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "width"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.width));
       obj.setProperty(runtime, PropNameIDCache::get(runtime, "height"), JSIConverter<std::optional<double>>::toJSI(runtime, arg.height));
       return obj;
@@ -83,6 +86,7 @@ namespace margelo::nitro {
         return false;
       }
       if (!JSIConverter<std::string>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "url")))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "thumbnail")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "width")))) return false;
       if (!JSIConverter<std::optional<double>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "height")))) return false;
       return true;

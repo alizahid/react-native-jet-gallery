@@ -33,6 +33,36 @@ final class GalleryTransitionDelegate: NSObject, UIViewControllerTransitioningDe
 
     return GalleryDismissAnimator(session: session)
   }
+
+  func interactionControllerForPresentation(
+    using animator: UIViewControllerAnimatedTransitioning
+  ) -> UIViewControllerInteractiveTransitioning? {
+    guard let animator = animator as? GalleryPresentAnimator else {
+      return nil
+    }
+
+    return GalleryPresentDriver(animator: animator)
+  }
+}
+
+/// Runs the present animator as an "interactive" transition that starts and
+/// finishes on its own. UIKit swallows every touch for the duration of a
+/// non-interactive transition, which left the toolbar dead until the flight
+/// ended; an interactive one keeps the app responsive from the first frame.
+private final class GalleryPresentDriver: NSObject, UIViewControllerInteractiveTransitioning {
+  private let animator: GalleryPresentAnimator
+
+  init(animator: GalleryPresentAnimator) {
+    self.animator = animator
+  }
+
+  var wantsInteractiveStart: Bool {
+    return true
+  }
+
+  func startInteractiveTransition(_ context: UIViewControllerContextTransitioning) {
+    animator.animateTransition(using: context)
+  }
 }
 
 private func aspectFitRect(for size: CGSize, in bounds: CGRect) -> CGRect {
@@ -67,25 +97,8 @@ private func aspectFillRect(for size: CGSize, in bounds: CGRect) -> CGRect {
   )
 }
 
-private func cachedImage(for url: String) -> UIImage? {
-  guard let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url) else {
-    return nil
-  }
-
-  guard
-    let key = SDWebImageManager.shared.cacheKey(for: parsed, context: GalleryPageCell.decodeContext)
-  else {
-    return nil
-  }
-
-  // Memory-only: a disk hit here would decode synchronously on the main
-  // thread right as the transition starts. A miss falls back to the
-  // source-view snapshot.
-  return SDImageCache.shared.imageFromMemoryCache(forKey: key)
-}
-
 /// An image view mirroring the transitioned image; keeps GIFs animating mid-flight.
-private func makeTransitionImageView(image: UIImage?) -> UIImageView {
+private func makeTransitionImageView(image: UIImage?) -> SDAnimatedImageView {
   let view = SDAnimatedImageView()
 
   view.image = image
@@ -132,7 +145,12 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
       startRadius = origin.borderRadius
     }
 
-    let image = cachedImage(for: session.url(at: session.initialIndex))
+    // The same bitmap the first page is seeded with (full image from the
+    // shared cache, else the thumbnail), so the flying copy lands on pixels
+    // the page is already showing. A miss falls back to a snapshot of the
+    // thumbnail view, which is cropped and stretched by comparison.
+    let placeholder = session.placeholder(at: session.initialIndex)
+    let image = placeholder?.image
 
     var animatedView: UIView?
     // A snapshot stretches when its bounds change aspect, unlike an image
@@ -198,16 +216,26 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
 
     animated.frame = start
     animated.layer.cornerRadius = startRadius
-    container.addSubview(animated)
+    // Inside the gallery view, beneath the toolbar and indicator: a tall image
+    // would otherwise cover the buttons mid-flight and reveal them with a pop
+    // when the copy is removed. The view's frame matches the container, so
+    // container-space rects apply unchanged.
+    controller.view.insertSubview(animated, aboveSubview: controller.pager)
+    // Continue the thumbnail's GIF from its current frame instead of frame 0.
+    (animated as? SDAnimatedImageView)?.seek(to: placeholder?.frame)
 
-    controller.view.alpha = 0
+    controller.dimView.alpha = 0
+    controller.chromeAlpha = 0
     controller.pager.alpha = 0
 
     UIView.animate(
       withDuration: transitionDuration(using: context),
       delay: 0,
       usingSpringWithDamping: 0.88,
-      initialSpringVelocity: 0.4
+      initialSpringVelocity: 0.4,
+      // UIKit blocks touches on views whose properties are animating, which
+      // would make the toolbar unresponsive until the flight ends.
+      options: [.allowUserInteraction]
     ) {
       animated.frame = target
       animated.layer.cornerRadius = 0
@@ -218,7 +246,8 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
         for: start.size,
         in: CGRect(origin: .zero, size: target.size)
       )
-      controller.view.alpha = 1
+      controller.dimView.alpha = 1
+      controller.chromeAlpha = 1
     } completion: { _ in
       controller.pager.alpha = 1
 
@@ -259,7 +288,8 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
     let target = session.dismissTarget(at: index)
     let cell = controller.pager.currentCell
 
-    var animatedView: UIImageView?
+    var animatedView: SDAnimatedImageView?
+    let position = cell?.framePosition
 
     if let cell, let image = cell.currentImage, let frame = cell.imageFrame(in: container) {
       let view = makeTransitionImageView(image: image)
@@ -277,6 +307,7 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
       // runs, or its property changes apply instantly instead of animating.
       if let animated = animatedView {
         container.addSubview(animated)
+        animated.seek(to: position)
         controller.pager.alpha = 0
       }
 
@@ -297,7 +328,11 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
       return
     }
 
-    container.addSubview(animated)
+    // Beneath the chrome, as on present, so the buttons fade out over the
+    // image instead of vanishing under the copy.
+    controller.view.insertSubview(animated, aboveSubview: controller.pager)
+    // Continue the page's GIF from its current frame instead of frame 0.
+    animated.seek(to: position)
     controller.pager.alpha = 0
 
     let session = self.session
@@ -310,10 +345,20 @@ final class GalleryDismissAnimator: NSObject, UIViewControllerAnimatedTransition
     ) {
       animated.frame = target.rect
       animated.layer.cornerRadius = target.borderRadius
-      controller.view.alpha = 0
+      controller.dimView.alpha = 0
+      controller.chromeAlpha = 0
     } completion: { _ in
-      // Linger one beat so a JS-hidden thumbnail can become visible again
-      // before the flying copy disappears.
+      // Hand the timing back before the thumbnail is restored, so the swap
+      // from flying copy to thumbnail is on the same frame.
+      if index == session.initialIndex {
+        session.syncSourceAnimation(to: animated.framePosition)
+      }
+
+      // The gallery view leaves the window on completion; move the copy to
+      // the container (same coordinate space) so it can linger one beat for
+      // a JS-hidden thumbnail to become visible again before it disappears.
+      container.addSubview(animated)
+
       DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
         animated.removeFromSuperview()
       }

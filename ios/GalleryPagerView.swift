@@ -13,6 +13,10 @@ final class GalleryPagerView: UIView {
 
   weak var delegate: GalleryPagerViewDelegate?
 
+  /// Supplies an already-decoded bitmap to show on a page while its full
+  /// image loads.
+  var placeholderProvider: ((Int) -> GalleryPlaceholder?)?
+
   private let urls: [String]
   private let loop: Bool
 
@@ -157,7 +161,9 @@ extension GalleryPagerView: UICollectionViewDataSource {
     )
 
     if let cell = cell as? GalleryPageCell {
-      cell.configure(url: urls[logicalIndex(for: indexPath.item)])
+      let logical = logicalIndex(for: indexPath.item)
+
+      cell.configure(url: urls[logical], placeholder: placeholderProvider?(logical))
 
       cell.onSingleTap = { [weak self] in
         guard let self else {
@@ -166,8 +172,6 @@ extension GalleryPagerView: UICollectionViewDataSource {
 
         self.delegate?.pagerDidSingleTap(self)
       }
-
-      let logical = logicalIndex(for: indexPath.item)
 
       cell.onImageLoad = { [weak self] in
         guard let self else {

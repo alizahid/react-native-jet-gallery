@@ -12,7 +12,11 @@ final class GalleryPageCell: UICollectionViewCell {
     .imageThumbnailPixelSize: CGSize(
       width: UIScreen.main.bounds.width * UIScreen.main.scale * 2,
       height: UIScreen.main.bounds.height * UIScreen.main.scale * 2
-    )
+    ),
+    // Decode GIFs as SDAnimatedImage so the page's view drives them with a
+    // seekable player (sd_setImage adds this implicitly; the manual manager
+    // load below does not). A plain frame-array UIImage always restarts at 0.
+    .animatedImageClass: SDAnimatedImage.self,
   ]
 
   var onSingleTap: (() -> Void)?
@@ -22,6 +26,7 @@ final class GalleryPageCell: UICollectionViewCell {
   private let imageView = SDAnimatedImageView()
 
   private var imageSize: CGSize = .zero
+  private var loadOperation: SDWebImageCombinedOperation?
 
   override init(frame: CGRect) {
     super.init(frame: frame)
@@ -55,7 +60,8 @@ final class GalleryPageCell: UICollectionViewCell {
   override func prepareForReuse() {
     super.prepareForReuse()
 
-    imageView.sd_cancelCurrentImageLoad()
+    loadOperation?.cancel()
+    loadOperation = nil
     imageView.image = nil
     imageView.transform = .identity
     imageView.layer.cornerRadius = 0
@@ -84,25 +90,51 @@ final class GalleryPageCell: UICollectionViewCell {
     }
   }
 
-  func configure(url: String) {
-    imageSize = .zero
+  /// `placeholder` is an already-decoded bitmap (the thumbnail, or the full
+  /// image from another cache client) shown aspect-fit until the load lands,
+  /// so the page matches the open transition's final frame pixel for pixel.
+  func configure(url: String, placeholder: GalleryPlaceholder?) {
+    loadOperation?.cancel()
+    loadOperation = nil
+
+    imageSize = placeholder?.image.size ?? .zero
     imageView.transform = .identity
     imageView.layer.cornerRadius = 0
     dismissCornerRadius = 0
 
+    if let placeholder {
+      imageView.image = placeholder.image
+      imageView.seek(to: placeholder.frame)
+      layoutImage()
+
+      // The full image is already decoded: adopt it rather than decoding a
+      // second copy, which would also restart a GIF from frame 0.
+      if placeholder.isFull {
+        return
+      }
+    } else {
+      imageView.image = nil
+    }
+
     let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url)
 
-    imageView.sd_setImage(
+    // Loaded through the manager rather than sd_setImage so the swap is ours:
+    // the placeholder's GIF position is read right before the full image
+    // replaces it, and carried over when both are the same animation.
+    loadOperation = SDWebImageManager.shared.loadImage(
       with: parsed,
-      placeholderImage: nil,
       options: [.retryFailed],
       context: Self.decodeContext,
       progress: nil
-    ) { [weak self] image, _, _, _ in
-      guard let self, let image else {
+    ) { [weak self] image, _, _, _, finished, _ in
+      guard let self, let image, finished else {
         return
       }
 
+      let position = self.imageView.framePosition
+
+      self.imageView.image = image
+      self.imageView.seek(to: position)
       self.imageSize = image.size
       self.layoutImage()
       self.onImageLoad?()
@@ -151,6 +183,11 @@ final class GalleryPageCell: UICollectionViewCell {
 
   var currentImage: UIImage? {
     return imageView.image
+  }
+
+  /// Where the page's GIF is in its loop, for the dismiss copy to continue from.
+  var framePosition: GalleryFramePosition? {
+    return imageView.framePosition
   }
 
   /// The image's current frame (including any interactive transform) in `view` coordinates.

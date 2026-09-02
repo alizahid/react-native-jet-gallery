@@ -122,7 +122,7 @@ Gallery.isVisible()
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `images` | `GalleryImageSource[]` | Images to show: `{ url, width?, height? }` — `url` is http/https/file; the optional intrinsic dimensions let the open transition land on the image's real aspect ratio before the full image has loaded |
+| `images` | `GalleryImageSource[]` | Images to show: `{ url, thumbnail?, width?, height? }` — `url` is http/https/file; `thumbnail` is the smaller URL your thumbnail view renders, reused for the transition and as the page placeholder; the optional intrinsic dimensions let the open transition land on the image's real aspect ratio before the full image has loaded |
 | `initialIndex` | `number` | Page to open at (imperative only; `Gallery.Image` uses its `index`) |
 | `loop` | `boolean` | Wrap around past the first/last image |
 | `origin` | `TransitionRect` | Rect to transition from/back to (imperative only) |
@@ -137,7 +137,7 @@ Gallery.isVisible()
 
 ## How the transition works
 
-The thumbnail is measured in window coordinates (`measureInWindow`) and passed to native, which animates a copy of the image from that rect into an aspect-fit fullscreen frame. If the image is already in the shared SDWebImage cache (expo-image uses the same cache on iOS), the transition renders actual pixels — including animating GIFs — otherwise it falls back to a snapshot of the thumbnail. While paging, the library keeps native updated with the on-screen frame of the current image's thumbnail so an interactive dismiss can land on it; if that thumbnail is unmounted or offscreen, the dismiss falls back to a fade.
+The thumbnail is measured in window coordinates (`measureInWindow`) and passed to native, which animates a copy of the image from that rect into an aspect-fit fullscreen frame. The copy uses the best bitmap already decoded in the app: the full image if any SDWebImage client has it in memory, else the `thumbnail` URL from the same cache, else the pixels the pressed view is rendering (expo-image only populates the shared memory cache with `cachePolicy="memory-disk"`; with its default `disk` policy the gallery borrows the bitmap from the view instead). GIFs hand their current frame from the thumbnail to the flying copy to the page, and back on dismiss, so they keep playing instead of restarting. The first page is seeded with the same bitmap, so the transition lands on identical pixels and the full image simply replaces it once loaded. Only when nothing is available does it fall back to a snapshot of the thumbnail view. The copy flies beneath the toolbar, and the open transition runs as a self-driven interactive transition so the toolbar is tappable from the first frame (UIKit swallows touches for the whole of a non-interactive transition); a close tapped mid-flight is honored as soon as presentation completes. Full-size downloads are also written to the shared disk cache under the plain URL, so an image viewed in the gallery is a cache hit for expo-image afterwards. While paging, the library keeps native updated with the on-screen frame of the current image's thumbnail so an interactive dismiss can land on it; if that thumbnail is unmounted or offscreen, the dismiss falls back to a fade.
 
 ## License
 

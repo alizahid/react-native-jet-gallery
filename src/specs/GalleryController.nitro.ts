@@ -13,6 +13,12 @@ export interface TransitionRect {
 export interface GalleryImageSource {
   /** http/https/file URL. */
   url: string
+  /**
+   * URL of a smaller copy that is already on screen (the thumbnail the
+   * pressed view shows). When it is in the shared image cache, the open
+   * transition and the page use it until the full image loads.
+   */
+  thumbnail?: string
   /** Intrinsic width in pixels; with height, lets the open transition aspect-fit before the full image loads. */
   width?: number
   /** Intrinsic height in pixels; with width, lets the open transition aspect-fit before the full image loads. */

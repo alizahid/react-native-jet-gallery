@@ -73,16 +73,44 @@ const parents: Array<{
   },
 ]
 
+// `thumbnail` is the smaller copy the thumbnail views render. The gallery
+// reuses it from the shared image cache for the open transition and as the
+// page placeholder until the full image arrives.
 const images: GalleryImageSource[] = [
-  { height: 800, url: 'https://picsum.photos/id/10/1200/800', width: 1200 },
-  { height: 1600, url: 'https://picsum.photos/id/1015/900/1600', width: 900 },
-  { height: 1200, url: 'https://picsum.photos/id/1025/1200/1200', width: 1200 },
+  {
+    height: 800,
+    thumbnail: 'https://picsum.photos/id/10/300/200',
+    url: 'https://picsum.photos/id/10/1200/800',
+    width: 1200,
+  },
+  {
+    height: 1600,
+    thumbnail: 'https://picsum.photos/id/1015/225/400',
+    url: 'https://picsum.photos/id/1015/900/1600',
+    width: 900,
+  },
+  {
+    height: 1200,
+    thumbnail: 'https://picsum.photos/id/1025/300/300',
+    url: 'https://picsum.photos/id/1025/1200/1200',
+    width: 1200,
+  },
   // No dimensions: the transition falls back to the thumbnail's aspect.
   {
     url: 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif',
   },
-  { height: 900, url: 'https://picsum.photos/id/1039/1600/900', width: 1600 },
-  { height: 1200, url: 'https://picsum.photos/id/1043/800/1200', width: 800 },
+  {
+    height: 900,
+    thumbnail: 'https://picsum.photos/id/1039/400/225',
+    url: 'https://picsum.photos/id/1039/1600/900',
+    width: 1600,
+  },
+  {
+    height: 1200,
+    thumbnail: 'https://picsum.photos/id/1043/200/300',
+    url: 'https://picsum.photos/id/1043/800/1200',
+    width: 800,
+  },
 ]
 
 const cardImages = images.slice(4, 6)
@@ -143,13 +171,37 @@ export default function App() {
               >
                 <Image
                   contentFit="cover"
-                  source={image.url}
+                  source={image.thumbnail ?? image.url}
                   style={styles.image}
                 />
               </Gallery.Image>
             ))}
           </View>
         </Gallery>
+
+        <Text style={styles.subtitle}>Compact rows</Text>
+
+        {images.slice(0, 3).map((image, index) => (
+          <Gallery images={[image]} key={image.url}>
+            <View style={styles.compact}>
+              <Gallery.Image index={0} style={styles.compactThumbnail}>
+                <Image
+                  contentFit="cover"
+                  source={image.thumbnail ?? image.url}
+                  style={styles.image}
+                />
+              </Gallery.Image>
+
+              <Text style={styles.body}>
+                Compact row {index + 1}: a tiny, cropped thumbnail of a{' '}
+                {(image.width ?? 0) > (image.height ?? 0)
+                  ? 'landscape'
+                  : 'portrait'}{' '}
+                image.
+              </Text>
+            </View>
+          </Gallery>
+        ))}
 
         {parents.map(({ Component, key, label }) => (
           <View key={key}>
@@ -244,6 +296,23 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
     borderRadius: 12,
     padding: 12,
+  },
+  compact: {
+    alignItems: 'center',
+    backgroundColor: '#141414',
+    borderCurve: 'continuous',
+    borderRadius: 12,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 8,
+    padding: 12,
+  },
+  compactThumbnail: {
+    borderCurve: 'continuous',
+    borderRadius: 6,
+    height: 56,
+    overflow: 'hidden',
+    width: 56,
   },
   cardImage: {
     aspectRatio: 1,

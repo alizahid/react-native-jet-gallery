@@ -12,6 +12,7 @@ final class GalleryViewController: UIViewController {
 
   private var chromeHidden = false
   private var didFireShow = false
+  private var dismissWhenPresented = false
   private var presentOverlay: UIView?
 
   init(session: GallerySession) {
@@ -30,6 +31,10 @@ final class GalleryViewController: UIViewController {
     )
 
     super.init(nibName: nil, bundle: nil)
+
+    pager.placeholderProvider = { [session] index in
+      session.placeholder(at: index)
+    }
 
     modalPresentationStyle = .custom
     modalPresentationCapturesStatusBarAppearance = true
@@ -92,7 +97,7 @@ final class GalleryViewController: UIViewController {
     indicator.setProgress(CGFloat(currentIndex))
 
     toolbar.onClose = { [weak self] in
-      self?.dismiss(animated: true)
+      self?.requestDismiss()
     }
 
     toolbar.onAction = { [weak self] id in
@@ -117,6 +122,22 @@ final class GalleryViewController: UIViewController {
       didFireShow = true
       session.fireShow()
     }
+
+    if dismissWhenPresented {
+      dismissWhenPresented = false
+      dismiss(animated: true)
+    }
+  }
+
+  /// The toolbar is live during the open transition, but UIKit ignores a
+  /// dismiss while a presentation is in progress — so a close tap mid-flight
+  /// is held until the presentation completes.
+  private func requestDismiss() {
+    if isBeingPresented {
+      dismissWhenPresented = true
+    } else {
+      dismiss(animated: true)
+    }
   }
 
   override func viewDidDisappear(_ animated: Bool) {
@@ -128,6 +149,19 @@ final class GalleryViewController: UIViewController {
     // path has already torn down.
     if isBeingDismissed || presentingViewController == nil {
       session.teardown(at: currentIndex)
+    }
+  }
+
+  /// The toolbar and page indicator together. The transitions fade these
+  /// and `dimView` rather than the whole view, so the flying image copy can
+  /// live beneath the chrome without fading along with it.
+  var chromeAlpha: CGFloat {
+    get {
+      return toolbar.alpha
+    }
+    set {
+      toolbar.alpha = newValue
+      indicator.alpha = newValue
     }
   }
 

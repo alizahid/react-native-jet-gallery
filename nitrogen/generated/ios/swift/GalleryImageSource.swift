@@ -18,8 +18,14 @@ public extension GalleryImageSource {
   /**
    * Create a new instance of `GalleryImageSource`.
    */
-  init(url: String, width: Double?, height: Double?) {
-    self.init(std.string(url), { () -> bridge.std__optional_double_ in
+  init(url: String, thumbnail: String?, width: Double?, height: Double?) {
+    self.init(std.string(url), { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = thumbnail {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_double_ in
       if let __unwrappedValue = width {
         return bridge.create_std__optional_double_(__unwrappedValue)
       } else {
@@ -37,6 +43,18 @@ public extension GalleryImageSource {
   @inline(__always)
   var url: String {
     return String(self.__url)
+  }
+  
+  @inline(__always)
+  var thumbnail: String? {
+    return { () -> String? in
+      if bridge.has_value_std__optional_std__string_(self.__thumbnail) {
+        let __unwrapped = bridge.get_std__optional_std__string_(self.__thumbnail)
+        return String(__unwrapped)
+      } else {
+        return nil
+      }
+    }()
   }
   
   @inline(__always)
