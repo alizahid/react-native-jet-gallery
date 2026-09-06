@@ -9,47 +9,43 @@ final class GalleryToolbar: UIView {
   init(actions: [GalleryActionItem]) {
     super.init(frame: .zero)
 
-    gradient.colors = [
-      UIColor.black.withAlphaComponent(0.6).cgColor,
-      UIColor.black.withAlphaComponent(0).cgColor,
-    ]
-    layer.addSublayer(gradient)
+    // Liquid Glass carries its own contrast; the scrim is only for older iOS.
+    if #unavailable(iOS 26) {
+      gradient.colors = [
+        UIColor.black.withAlphaComponent(0.6).cgColor,
+        UIColor.black.withAlphaComponent(0).cgColor,
+      ]
+      layer.addSublayer(gradient)
+    }
 
-    let close = makeButton(icon: "xmark", label: "Close")
-
-    close.addAction(
-      UIAction { [weak self] _ in
+    let close = glass(
+      makeButton(icon: "xmark", label: "Close") { [weak self] in
         self?.onClose?()
-      },
-      for: .primaryActionTriggered
+      }
     )
 
     addSubview(close)
 
     let stack = UIStackView()
     stack.axis = .horizontal
-    stack.spacing = 4
     stack.translatesAutoresizingMaskIntoConstraints = false
-    addSubview(stack)
 
     for action in actions {
-      let button = makeButton(icon: action.icon, label: action.title ?? action.id)
-
-      button.addAction(
-        UIAction { [weak self] _ in
-          self?.onAction?(action.id)
-        },
-        for: .primaryActionTriggered
-      )
+      let button = makeButton(icon: action.icon, label: action.title ?? action.id) { [weak self] in
+        self?.onAction?(action.id)
+      }
 
       stack.addArrangedSubview(button)
     }
 
+    let group = glass(stack)
+    addSubview(group)
+
     NSLayoutConstraint.activate([
       close.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
       close.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
-      stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-      stack.centerYAnchor.constraint(equalTo: close.centerYAnchor),
+      group.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+      group.centerYAnchor.constraint(equalTo: close.centerYAnchor),
     ])
   }
 
@@ -69,17 +65,17 @@ final class GalleryToolbar: UIView {
     )
   }
 
-  private func makeButton(icon: String, label: String) -> UIButton {
-    let button = UIButton(type: .system)
+  private func makeButton(icon: String, label: String, handler: @escaping () -> Void) -> UIButton {
+    // Configuration-based layout centers the symbol; the legacy `.system` layout
+    // baseline-aligns it to the empty title and it sits visibly low.
+    var config = UIButton.Configuration.plain()
+    config.image = UIImage(systemName: icon)
+    config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+    config.baseForegroundColor = .white
+    config.contentInsets = .zero
 
-    button.setImage(
-      UIImage(
-        systemName: icon,
-        withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
-      ),
-      for: .normal
-    )
-    button.tintColor = .white
+    let button = UIButton(configuration: config)
+    button.addAction(UIAction { _ in handler() }, for: .primaryActionTriggered)
     button.accessibilityLabel = label
     button.translatesAutoresizingMaskIntoConstraints = false
 
@@ -89,5 +85,27 @@ final class GalleryToolbar: UIView {
     ])
 
     return button
+  }
+
+  /// Wraps `content` in a Liquid Glass capsule on iOS 26; passes it through otherwise.
+  private func glass(_ content: UIView) -> UIView {
+    guard #available(iOS 26, *) else { return content }
+
+    let effect = UIGlassEffect(style: .regular)
+    effect.isInteractive = true
+
+    let effectView = UIVisualEffectView(effect: effect)
+    effectView.cornerConfiguration = .capsule()
+    effectView.translatesAutoresizingMaskIntoConstraints = false
+    effectView.contentView.addSubview(content)
+
+    NSLayoutConstraint.activate([
+      content.topAnchor.constraint(equalTo: effectView.contentView.topAnchor),
+      content.bottomAnchor.constraint(equalTo: effectView.contentView.bottomAnchor),
+      content.leadingAnchor.constraint(equalTo: effectView.contentView.leadingAnchor),
+      content.trailingAnchor.constraint(equalTo: effectView.contentView.trailingAnchor),
+    ])
+
+    return effectView
   }
 }
