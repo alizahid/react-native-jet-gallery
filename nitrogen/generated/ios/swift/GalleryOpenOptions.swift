@@ -18,7 +18,7 @@ public extension GalleryOpenOptions {
   /**
    * Create a new instance of `GalleryOpenOptions`.
    */
-  init(images: [GalleryImageSource], initialIndex: Double?, loop: Bool?, origin: TransitionRect?, sourceTag: Double?, actions: [GalleryActionSpec]?, backgroundColor: String?, indicatorColor: String?, indicatorInactiveColor: String?, onShow: (() -> Void)?, onIndexChange: ((_ payload: GalleryEventPayload) -> Void)?, onAction: ((_ payload: GalleryActionPayload) -> Void)?, onDismiss: ((_ payload: GalleryEventPayload) -> Void)?) {
+  init(images: [GalleryImageSource], initialIndex: Double?, loop: Bool?, rotation: Bool?, origin: TransitionRect?, sourceTag: Double?, actions: [GalleryActionSpec]?, backgroundColor: String?, indicatorColor: String?, indicatorInactiveColor: String?, onShow: (() -> Void)?, onIndexChange: ((_ payload: GalleryEventPayload) -> Void)?, onAction: ((_ payload: GalleryActionPayload) -> Void)?, onDismiss: ((_ payload: GalleryEventPayload) -> Void)?) {
     self.init({ () -> bridge.std__vector_GalleryImageSource_ in
       var __vector = bridge.create_std__vector_GalleryImageSource_(images.count)
       for __item in images {
@@ -33,6 +33,12 @@ public extension GalleryOpenOptions {
       }
     }(), { () -> bridge.std__optional_bool_ in
       if let __unwrappedValue = loop {
+        return bridge.create_std__optional_bool_(__unwrappedValue)
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_bool_ in
+      if let __unwrappedValue = rotation {
         return bridge.create_std__optional_bool_(__unwrappedValue)
       } else {
         return .init()
@@ -140,6 +146,18 @@ public extension GalleryOpenOptions {
     return { () -> Bool? in
       if bridge.has_value_std__optional_bool_(self.__loop) {
         let __unwrapped = bridge.get_std__optional_bool_(self.__loop)
+        return __unwrapped
+      } else {
+        return nil
+      }
+    }()
+  }
+  
+  @inline(__always)
+  var rotation: Bool? {
+    return { () -> Bool? in
+      if bridge.has_value_std__optional_bool_(self.__rotation) {
+        let __unwrapped = bridge.get_std__optional_bool_(self.__rotation)
         return __unwrapped
       } else {
         return nil

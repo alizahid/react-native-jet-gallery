@@ -88,7 +88,8 @@ class HybridGalleryController: HybridGalleryControllerSpec {
       return
     }
 
-    let controller = GalleryViewController(session: session)
+    let orientation = presenter.view.window?.windowScene?.interfaceOrientation ?? .portrait
+    let controller = GalleryViewController(session: session, orientation: orientation)
     presentedController = controller
 
     presenter.present(controller, animated: true)

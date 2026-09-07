@@ -17,6 +17,12 @@ export interface GalleryAction {
 export interface GalleryOptions {
   /** Wrap around when scrolling past the first or last image. */
   loop?: boolean
+  /**
+   * Rotate with the device while open. Defaults to true. Capped by the
+   * orientations the app allows; a portrait-locked app must unlock while the
+   * gallery is open (see README).
+   */
+  rotation?: boolean
   actions?: GalleryAction[]
   backgroundColor?: string
   /** Color of the active page bullet. Defaults to white. */

@@ -53,6 +53,7 @@ final class GallerySession {
   let urls: [String]
   let initialIndex: Int
   let loop: Bool
+  let rotation: Bool
   let actions: [GalleryActionItem]
   let backgroundColor: UIColor
   let indicatorColor: UIColor
@@ -88,6 +89,7 @@ final class GallerySession {
     self.urls = images.map(\.url)
     self.initialIndex = min(max(options.initialIndex?.asSafeInt ?? 0, 0), max(images.count - 1, 0))
     self.loop = options.loop ?? false
+    self.rotation = options.rotation ?? true
     self.actions = (options.actions ?? []).map {
       GalleryActionItem(id: $0.id, title: $0.title, icon: $0.icon)
     }

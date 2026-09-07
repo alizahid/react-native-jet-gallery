@@ -47,6 +47,8 @@ export interface GalleryOpenOptions {
   images: GalleryImageSource[]
   initialIndex?: number
   loop?: boolean
+  /** Rotate with the device while open. Defaults to true. */
+  rotation?: boolean
   /** Present-from rect in window coordinates; omit for a plain fade/zoom. */
   origin?: TransitionRect
   /** React tag of the pressed thumbnail; enables snapshot transition + auto-hide. */

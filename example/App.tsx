@@ -279,6 +279,15 @@ export default function App() {
         >
           <Text style={styles.label}>Open from a rect</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            Gallery.open({ images, rotation: false })
+          }}
+          style={styles.button}
+        >
+          <Text style={styles.label}>Open without rotation</Text>
+        </TouchableOpacity>
       </ScrollView>
     </GestureHandlerRootView>
   )

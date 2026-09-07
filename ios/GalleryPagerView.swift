@@ -29,6 +29,9 @@ final class GalleryPagerView: UIView {
   private(set) var currentIndex: Int
   private var currentItem = 0
   private var pendingInitialIndex: Int?
+  /// A frame change leaves the old offset in place, which reads as a
+  /// different page at the new width until `layoutSubviews` corrects it.
+  private var isRelayouting = false
 
   private var isLooping: Bool {
     return loop && urls.count > 1
@@ -86,6 +89,9 @@ final class GalleryPagerView: UIView {
     guard collectionView.frame != frame else {
       return
     }
+
+    isRelayouting = true
+    defer { isRelayouting = false }
 
     collectionView.frame = frame
     layout.itemSize = frame.size
@@ -190,7 +196,7 @@ extension GalleryPagerView: UICollectionViewDelegate {
   func scrollViewDidScroll(_ scrollView: UIScrollView) {
     let width = scrollView.frame.width
 
-    guard width > 0, pendingInitialIndex == nil else {
+    guard width > 0, pendingInitialIndex == nil, !isRelayouting else {
       return
     }
 

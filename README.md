@@ -125,6 +125,7 @@ Gallery.isVisible()
 | `images` | `GalleryImageSource[]` | Images to show: `{ url, thumbnail?, width?, height? }` — `url` is http/https/file; `thumbnail` is the smaller URL your thumbnail view renders, reused for the transition and as the page placeholder; the optional intrinsic dimensions let the open transition land on the image's real aspect ratio before the full image has loaded |
 | `initialIndex` | `number` | Page to open at (imperative only; `Gallery.Image` uses its `index`) |
 | `loop` | `boolean` | Wrap around past the first/last image |
+| `rotation` | `boolean` | Rotate with the device while open, default `true` (see [Rotation](#rotation)) |
 | `origin` | `TransitionRect` | Rect to transition from/back to (imperative only) |
 | `actions` | `GalleryAction[]` | Toolbar buttons: `{ id, icon, title?, onPress? }` — `icon` is an SF Symbol name |
 | `backgroundColor` | `string` | Viewer background, default `#000000` |
@@ -134,6 +135,18 @@ Gallery.isVisible()
 | `onIndexChange` | `(payload) => void` | Current page changed; payload is `{ index, url }` |
 | `onActionPress` | `(actionId, payload) => void` | Any action pressed (in addition to the action's own `onPress`) |
 | `onDismiss` | `(payload) => void` | Viewer dismissed |
+
+## Rotation
+
+The gallery rotates with the device by default; pass `rotation={false}` (or `rotation: false`) to keep it in the orientation it opened in. UIKit caps a presented controller at the orientations the app allows, so a portrait-locked app has to widen them while the gallery is open — with [expo-screen-orientation](https://docs.expo.dev/versions/latest/sdk/screen-orientation/), unlock on open and lock again on dismiss:
+
+```tsx
+<Gallery
+  images={images}
+  onShow={() => ScreenOrientation.unlockAsync()}
+  onDismiss={() => ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)}
+>
+```
 
 ## How the transition works
 

@@ -10,13 +10,18 @@ final class GalleryViewController: UIViewController {
 
   private(set) var currentIndex: Int
 
+  /// The orientation at presentation, so a `rotation: false` gallery stays
+  /// put without forcing the app out of the orientation it is already in.
+  private let lockedOrientations: UIInterfaceOrientationMask
+
   private var chromeHidden = false
   private var didFireShow = false
   private var dismissWhenPresented = false
   private var presentOverlay: UIView?
 
-  init(session: GallerySession) {
+  init(session: GallerySession, orientation: UIInterfaceOrientation) {
     self.session = session
+    self.lockedOrientations = UIInterfaceOrientationMask(locking: orientation)
     self.currentIndex = session.initialIndex
     self.pager = GalleryPagerView(
       urls: session.urls,
@@ -56,6 +61,31 @@ final class GalleryViewController: UIViewController {
 
   override var prefersHomeIndicatorAutoHidden: Bool {
     return chromeHidden
+  }
+
+  /// UIKit intersects this with the app's own mask (the app delegate, else
+  /// Info.plist), so a portrait-locked app must widen that while the gallery
+  /// is open for this to have any effect.
+  override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    guard session.rotation else {
+      return lockedOrientations
+    }
+
+    return UIDevice.current.userInterfaceIdiom == .pad ? .all : .allButUpsideDown
+  }
+
+  override func viewWillTransition(
+    to size: CGSize,
+    with coordinator: UIViewControllerTransitionCoordinator
+  ) {
+    super.viewWillTransition(to: size, with: coordinator)
+
+    // The flying snapshot is sized for the old orientation.
+    fadePresentOverlay()
+    // JS measured the thumbnails before the rotation. The pressed one is
+    // measured live on dismiss; paged-to siblings fall back to a fade until
+    // the next page change measures them again.
+    session.dismissTargets.removeAll()
   }
 
   override func viewDidLoad() {
@@ -256,6 +286,21 @@ final class GalleryViewController: UIViewController {
 
     default:
       break
+    }
+  }
+}
+
+extension UIInterfaceOrientationMask {
+  init(locking orientation: UIInterfaceOrientation) {
+    switch orientation {
+    case .landscapeLeft:
+      self = .landscapeLeft
+    case .landscapeRight:
+      self = .landscapeRight
+    case .portraitUpsideDown:
+      self = .portraitUpsideDown
+    default:
+      self = .portrait
     }
   }
 }
