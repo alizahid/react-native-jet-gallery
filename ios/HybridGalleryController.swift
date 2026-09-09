@@ -63,7 +63,7 @@ class HybridGalleryController: HybridGalleryControllerSpec {
 
   func close() throws {
     DispatchQueue.main.async { [weak self] in
-      self?.presentedController?.dismiss(animated: true)
+      self?.presentedController?.requestDismiss()
     }
   }
 

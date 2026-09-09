@@ -1,3 +1,4 @@
+import SDWebImage
 import UIKit
 
 protocol GalleryPagerViewDelegate: AnyObject {
@@ -106,6 +107,7 @@ final class GalleryPagerView: UIView {
       let item = middleBase + initial
       currentItem = item
       scroll(to: item, animated: false)
+      prefetchNeighbors()
     } else {
       // Keep the current page aligned when the page width changes (rotation).
       collectionView.layoutIfNeeded()
@@ -129,6 +131,26 @@ final class GalleryPagerView: UIView {
   private func scroll(to item: Int, animated: Bool) {
     let offset = CGPoint(x: CGFloat(item) * collectionView.frame.width, y: 0)
     collectionView.setContentOffset(offset, animated: animated)
+  }
+
+  /// Warms the shared cache with the pages either side of the current one,
+  /// so a swipe lands on a decoded image instead of starting its download.
+  private func prefetchNeighbors() {
+    let neighbors = [currentIndex - 1, currentIndex + 1].compactMap { index -> URL? in
+      guard isLooping || urls.indices.contains(index) else {
+        return nil
+      }
+
+      return GalleryImageCache.url(urls[(index + urls.count) % urls.count])
+    }
+
+    SDWebImagePrefetcher.shared.prefetchURLs(
+      neighbors,
+      options: [],
+      context: GalleryPageCell.decodeContext,
+      progress: nil,
+      completed: nil
+    )
   }
 
   /// Silently jump back into the middle band so the loop never hits an edge.
@@ -218,6 +240,7 @@ extension GalleryPagerView: UICollectionViewDelegate {
     if logical != currentIndex {
       currentIndex = logical
       delegate?.pager(self, didChangeIndex: logical)
+      prefetchNeighbors()
     }
   }
 

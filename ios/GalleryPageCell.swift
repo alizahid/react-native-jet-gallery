@@ -4,14 +4,15 @@ import UIKit
 final class GalleryPageCell: UICollectionViewCell {
   static let reuseIdentifier = "GalleryPageCell"
 
-  /// Decode capped at 2× screen pixels per axis — enough headroom for zooming
-  /// without holding full-resolution bitmaps for every page. The transition's
-  /// cache lookup must pass the same context, since the thumbnail size is part
-  /// of the cache key.
+  /// Decode capped at 1.5× screen pixels per axis — headroom for zooming
+  /// without holding full-resolution bitmaps for every page (the shared
+  /// memory cache keeps every decoded page until a memory warning). The
+  /// transition's cache lookup must pass the same context, since the
+  /// thumbnail size is part of the cache key.
   static let decodeContext: [SDWebImageContextOption: Any] = [
     .imageThumbnailPixelSize: CGSize(
-      width: UIScreen.main.bounds.width * UIScreen.main.scale * 2,
-      height: UIScreen.main.bounds.height * UIScreen.main.scale * 2
+      width: UIScreen.main.bounds.width * UIScreen.main.scale * 1.5,
+      height: UIScreen.main.bounds.height * UIScreen.main.scale * 1.5
     ),
     // Decode GIFs as SDAnimatedImage so the page's view drives them with a
     // seekable player (sd_setImage adds this implicitly; the manual manager
@@ -116,13 +117,11 @@ final class GalleryPageCell: UICollectionViewCell {
       imageView.image = nil
     }
 
-    let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url)
-
     // Loaded through the manager rather than sd_setImage so the swap is ours:
     // the placeholder's GIF position is read right before the full image
     // replaces it, and carried over when both are the same animation.
     loadOperation = SDWebImageManager.shared.loadImage(
-      with: parsed,
+      with: GalleryImageCache.url(url),
       options: [.retryFailed],
       context: Self.decodeContext,
       progress: nil

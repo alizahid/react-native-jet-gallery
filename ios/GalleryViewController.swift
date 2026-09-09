@@ -92,6 +92,9 @@ final class GalleryViewController: UIViewController {
     super.viewDidLoad()
 
     view.backgroundColor = .clear
+    // A `.custom` presentation keeps the presenter's view in the hierarchy,
+    // so VoiceOver would otherwise wander into it.
+    view.accessibilityViewIsModal = true
 
     dimView.frame = view.bounds
     dimView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -107,7 +110,8 @@ final class GalleryViewController: UIViewController {
     view.addSubview(toolbar)
 
     indicator.translatesAutoresizingMaskIntoConstraints = false
-    indicator.isHidden = session.urls.count <= 1
+    // Past ~20 the dot row outgrows the screen; the Photos app hides it too.
+    indicator.isHidden = session.urls.count <= 1 || session.urls.count > 20
     view.addSubview(indicator)
 
     NSLayoutConstraint.activate([
@@ -162,12 +166,18 @@ final class GalleryViewController: UIViewController {
   /// The toolbar is live during the open transition, but UIKit ignores a
   /// dismiss while a presentation is in progress — so a close tap mid-flight
   /// is held until the presentation completes.
-  private func requestDismiss() {
+  func requestDismiss() {
     if isBeingPresented {
       dismissWhenPresented = true
     } else {
       dismiss(animated: true)
     }
+  }
+
+  /// VoiceOver's two-finger Z scrub.
+  override func accessibilityPerformEscape() -> Bool {
+    requestDismiss()
+    return true
   }
 
   override func viewDidDisappear(_ animated: Bool) {

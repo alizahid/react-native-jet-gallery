@@ -22,7 +22,7 @@
 - Animated **GIF/APNG/WebP** playback fullscreen (SDWebImage)
 - **Custom actions** rendered as SF Symbol buttons in the toolbar, with per-action `onPress`
 - Animated **dot page indicator** — the active bullet is a double-width pill that follows your finger as you scroll, with configurable colors
-- iOS only for now; calls are safe no-ops on other platforms
+- iOS only for now (iOS 16.4+, Xcode 26); calls are safe no-ops on other platforms
 
 > **Note:** Nitro Modules require a development build — this library does not work in Expo Go.
 

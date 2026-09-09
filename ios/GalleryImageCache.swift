@@ -4,6 +4,11 @@ import UIKit
 /// Bridges to bitmaps the app has already decoded, so the open transition
 /// and the first page can show real pixels before the full image loads.
 enum GalleryImageCache {
+  /// Bare paths are file URLs; everything else is parsed as-is.
+  static func url(_ string: String) -> URL? {
+    return string.hasPrefix("/") ? URL(fileURLWithPath: string) : URL(string: string)
+  }
+
   /// Memory-only lookup in the shared SDWebImage cache.
   ///
   /// Checks the key this library decodes under (thumbnail-sized) and the
@@ -12,8 +17,7 @@ enum GalleryImageCache {
   /// re-decoded. Memory only: a disk hit would decode synchronously on the
   /// main thread right as the transition starts.
   static func memoryImage(for url: String?) -> UIImage? {
-    guard let url, !url.isEmpty,
-          let parsed = url.hasPrefix("/") ? URL(fileURLWithPath: url) : URL(string: url) else {
+    guard let url, !url.isEmpty, let parsed = Self.url(url) else {
       return nil
     }
 

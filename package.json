@@ -45,26 +45,17 @@
     "build": "bun run typecheck && bob build",
     "clean": "git clean -dfX",
     "codegen": "nitrogen",
-    "postcodegen": "bun run --cwd example pod",
     "format": "biome check --write src example/App.tsx",
     "lint": "biome check src example/App.tsx",
+    "postcodegen": "bun run --cwd example pod",
+    "prepack": "bun run build",
     "release": "release-it --only-version",
-    "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "testMatch": [
-      "<rootDir>/src/**/*.test.ts"
-    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.6",
     "@release-it/conventional-changelog": "^12.0.0",
-    "@types/jest": "^30.0.0",
     "@types/react": "19.2.17",
-    "jest": "^30.4.2",
     "nitrogen": "^0.36.3",
     "react": "19.2.3",
     "react-native": "0.86.0",
@@ -72,7 +63,6 @@
     "react-native-gesture-handler": "~2.32.0",
     "react-native-nitro-modules": "^0.36.3",
     "release-it": "^21.0.0",
-    "ts-jest": "^29.4.12",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {

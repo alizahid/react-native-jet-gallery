@@ -5,7 +5,7 @@ import {
   useContext,
   useMemo,
   useRef,
-  useState,
+  useSyncExternalStore,
 } from 'react'
 import {
   findNodeHandle,
@@ -32,9 +32,10 @@ type RegistryEntry = {
 }
 
 type GalleryContextValue = {
-  hiddenIndex: number | null
+  isHidden: (index: number) => boolean
   openAt: (index: number) => void
   register: (index: number, view: View | null, borderRadius?: number) => void
+  subscribe: (listener: () => void) => () => void
   urlAt: (index: number) => string
 }
 
@@ -48,7 +49,35 @@ export interface GalleryProps extends GalleryOptions {
 export function GalleryRoot({ images, children, ...options }: GalleryProps) {
   const registry = useRef(new Map<number, RegistryEntry>())
 
-  const [hiddenIndex, setHiddenIndex] = useState<number | null>(null)
+  // The hidden index lives outside React state so a page change re-renders
+  // only the two thumbnails whose visibility flipped, not every Gallery.Image.
+  const hiddenIndex = useRef<number | null>(null)
+  const listeners = useRef(new Set<() => void>())
+
+  const setHiddenIndex = useCallback((index: number | null) => {
+    if (hiddenIndex.current === index) {
+      return
+    }
+
+    hiddenIndex.current = index
+
+    for (const listener of listeners.current) {
+      listener()
+    }
+  }, [])
+
+  const subscribe = useCallback((listener: () => void) => {
+    listeners.current.add(listener)
+
+    return () => {
+      listeners.current.delete(listener)
+    }
+  }, [])
+
+  const isHidden = useCallback(
+    (index: number) => hiddenIndex.current === index,
+    []
+  )
 
   const imagesRef = useRef(images)
   imagesRef.current = images
@@ -67,61 +96,64 @@ export function GalleryRoot({ images, children, ...options }: GalleryProps) {
     []
   )
 
-  const openAt = useCallback((index: number) => {
-    // The pressed thumbnail is hidden natively (alpha) while presented, so JS
-    // must not also set opacity — the two writes race and native can capture
-    // the already-hidden alpha as the value to restore. JS opacity is only
-    // used for paged-to siblings, which native never touches.
-    const launch = (origin?: TransitionRect, sourceTag?: number) => {
-      open({
-        ...optionsRef.current,
-        images: imagesRef.current,
-        initialIndex: index,
-        origin,
-        sourceTag,
-        onIndexChange: (payload) => {
-          const sibling = registry.current.get(payload.index)
+  const openAt = useCallback(
+    (index: number) => {
+      // The pressed thumbnail is hidden natively (alpha) while presented, so JS
+      // must not also set opacity — the two writes race and native can capture
+      // the already-hidden alpha as the value to restore. JS opacity is only
+      // used for paged-to siblings, which native never touches.
+      const launch = (origin?: TransitionRect, sourceTag?: number) => {
+        open({
+          ...optionsRef.current,
+          images: imagesRef.current,
+          initialIndex: index,
+          origin,
+          sourceTag,
+          onIndexChange: (payload) => {
+            const sibling = registry.current.get(payload.index)
 
-          if (sibling) {
-            setHiddenIndex(payload.index)
+            if (sibling) {
+              setHiddenIndex(payload.index)
 
-            sibling.view.measureInWindow((x, y, width, height) => {
-              setDismissTarget(payload.index, {
-                borderRadius: sibling.borderRadius,
-                height,
-                width,
-                x,
-                y,
+              sibling.view.measureInWindow((x, y, width, height) => {
+                setDismissTarget(payload.index, {
+                  borderRadius: sibling.borderRadius,
+                  height,
+                  width,
+                  x,
+                  y,
+                })
               })
-            })
-          } else {
+            } else {
+              setHiddenIndex(null)
+              setDismissTarget(payload.index)
+            }
+
+            optionsRef.current.onIndexChange?.(payload)
+          },
+          onDismiss: (payload) => {
             setHiddenIndex(null)
-            setDismissTarget(payload.index)
-          }
 
-          optionsRef.current.onIndexChange?.(payload)
-        },
-        onDismiss: (payload) => {
-          setHiddenIndex(null)
+            optionsRef.current.onDismiss?.(payload)
+          },
+        })
+      }
 
-          optionsRef.current.onDismiss?.(payload)
-        },
-      })
-    }
+      const entry = registry.current.get(index)
 
-    const entry = registry.current.get(index)
-
-    if (entry && typeof entry.view.measureInWindow === 'function') {
-      entry.view.measureInWindow((x, y, width, height) => {
-        launch(
-          { borderRadius: entry.borderRadius, height, width, x, y },
-          findNodeHandle(entry.view) ?? undefined
-        )
-      })
-    } else {
-      launch()
-    }
-  }, [])
+      if (entry && typeof entry.view.measureInWindow === 'function') {
+        entry.view.measureInWindow((x, y, width, height) => {
+          launch(
+            { borderRadius: entry.borderRadius, height, width, x, y },
+            findNodeHandle(entry.view) ?? undefined
+          )
+        })
+      } else {
+        launch()
+      }
+    },
+    [setHiddenIndex]
+  )
 
   const urlAt = useCallback(
     (index: number) => imagesRef.current[index]?.url ?? '',
@@ -129,8 +161,8 @@ export function GalleryRoot({ images, children, ...options }: GalleryProps) {
   )
 
   const value = useMemo(
-    () => ({ hiddenIndex, openAt, register, urlAt }),
-    [hiddenIndex, openAt, register, urlAt]
+    () => ({ isHidden, openAt, register, subscribe, urlAt }),
+    [isHidden, openAt, register, subscribe, urlAt]
   )
 
   return (
@@ -159,7 +191,9 @@ export function GalleryImage({
     throw new Error('Gallery.Image must be rendered inside a <Gallery>')
   }
 
-  const { hiddenIndex, openAt, register, urlAt } = context
+  const { isHidden, openAt, register, subscribe, urlAt } = context
+
+  const hidden = useSyncExternalStore(subscribe, () => isHidden(index))
 
   // Only a uniform numeric radius participates in the transition — per-corner
   // and percentage radii can't be tweened as a single layer.cornerRadius.
@@ -185,7 +219,7 @@ export function GalleryImage({
       }
       onPress={() => openAt(index)}
       ref={ref}
-      style={[style, hiddenIndex === index && styles.hidden]}
+      style={[style, hidden && styles.hidden]}
     >
       {children}
     </Pressable>
