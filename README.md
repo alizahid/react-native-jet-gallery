@@ -238,7 +238,7 @@ The library loads through SDWebImage's shared cache, the same one expo-image use
 ## Sponsors
 
 <p align="center">
-  <a href="https://acorn.blue"><img alt="Acorn" src="https://acorn.blue/images/acorn.png" width="80"></a>
+  <a href="https://acorn.blue"><img alt="Acorn" src="https://acorn.blue/images/acorn.png" width="96"></a>
 </p>
 
 <p align="center">
