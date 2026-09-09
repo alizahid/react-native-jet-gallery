@@ -15,16 +15,25 @@
 
 ---
 
-- Wrap **your own image component** — expo-image, `Image`, anything — and get a fullscreen viewer with a shared-element-style open/dismiss transition
-- **Imperative API** to open the gallery programmatically, with a transition when you pass an origin rect
-- Horizontal **paging** with optional infinite **looping**
-- **Pinch** and **double-tap zoom**, interactive **swipe-down to dismiss** that follows your finger and lands on the correct thumbnail — even after paging
-- Animated **GIF/APNG/WebP** playback fullscreen (SDWebImage)
-- **Custom actions** rendered as SF Symbol buttons in the toolbar, with per-action `onPress`
-- Animated **dot page indicator** — the active bullet is a double-width pill that follows your finger as you scroll, with configurable colors
-- iOS only for now (iOS 16.4+, Xcode 26); calls are safe no-ops on other platforms
+## Features
 
-> **Note:** Nitro Modules require a development build — this library does not work in Expo Go.
+- **Wrap your own image component** — expo-image, `Image`, anything — and get a fullscreen viewer with a shared-element open and dismiss transition
+- **Imperative API** to open the gallery from anywhere, with a transition when you pass an origin rect
+- **Paging** with optional infinite **looping**, and adjacent pages prefetched
+- **Pinch** and **double-tap zoom**
+- **Swipe down to dismiss** that follows your finger and lands on the correct thumbnail, even after paging
+- Animated **GIF, APNG, and WebP** playback, with GIFs keeping their timing across the transition
+- **Custom actions** as SF Symbol toolbar buttons, Liquid Glass on iOS 26
+- Animated **page indicator** whose active pill follows your finger
+- **Rotates** with the device
+- VoiceOver: modal focus and the escape gesture dismisses
+
+## Requirements
+
+- iOS 16.4+, built with Xcode 26
+- A development build — Nitro Modules do not work in Expo Go
+- Your app wrapped in a `GestureHandlerRootView` (expo-router and react-navigation apps already are)
+- Android is not supported yet; every call is a safe no-op there
 
 ## Installation
 
@@ -33,11 +42,13 @@ npm install react-native-jet-gallery react-native-nitro-modules react-native-ges
 cd ios && pod install
 ```
 
-Using Expo? `npx expo prebuild` handles the pod install, and [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/) is already part of every Expo project.
+With Expo, `npx expo prebuild` handles the pod install and [react-native-gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/) is already part of every project.
 
-`Gallery.Image` renders a gesture-handler `Pressable`, so your app must be wrapped in a `GestureHandlerRootView` — [expo-router](https://docs.expo.dev/router/introduction/) and react-navigation apps already have one.
+## Usage
 
-## Declarative API
+### Declarative
+
+Wrap your thumbnails in `Gallery.Image`. Each one becomes a pressable that opens the viewer with a transition from its exact frame, and dismissing transitions back to the thumbnail of whichever image you are on.
 
 ```tsx
 import { Image } from 'expo-image'
@@ -45,7 +56,7 @@ import { Gallery } from 'react-native-jet-gallery'
 
 const images = [
   { url: 'https://example.com/1.jpg', width: 1200, height: 800 },
-  { url: 'https://example.com/2.gif' }, // dimensions are optional
+  { url: 'https://example.com/2.gif' },
 ]
 
 function Grid() {
@@ -59,9 +70,9 @@ function Grid() {
           title: 'Save',
         },
       ]}
+      images={images}
       loop
       onDismiss={(payload) => console.log('closed at', payload.index)}
-      images={images}
     >
       {images.map((image, index) => (
         <Gallery.Image index={index} key={image.url} style={styles.thumbnail}>
@@ -73,44 +84,17 @@ function Grid() {
 }
 ```
 
-`Gallery.Image` wraps your thumbnail in a pressable, measures it on press, and opens the fullscreen viewer with a transition from that exact frame. Dismissing transitions back to the thumbnail of the image you are currently on, not just the one you opened from.
-
-### Gallery.Image props
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `index` | `number` | Index of this thumbnail in the surrounding gallery's `images` |
-| `onLongPress` | `(payload) => void` | Long press on the thumbnail; payload is `{ index, url }` |
-| `disabled` | `boolean` | Disables the built-in pressable |
-| `style` | `StyleProp<ViewStyle>` | Style for the wrapping pressable |
-
-### Inside a gesture-handler pressable
-
-`Gallery.Image` uses gesture-handler's `Pressable`, so thumbnails keep working when nested inside gesture-handler pressables and touchables — the innermost pressable wins:
-
-```tsx
-import { Pressable } from 'react-native-gesture-handler'
-
-<Pressable onPress={openPost}>
-  <Text>Tapping the image opens the gallery — tapping anywhere else presses the card.</Text>
-
-  <Gallery.Image index={0}>
-    <Image source={url} style={styles.image} />
-  </Gallery.Image>
-</Pressable>
-```
-
-## Imperative API
+### Imperative
 
 ```tsx
 import { Gallery } from 'react-native-jet-gallery'
 
-// Plain fade-in
+// Plain fade in
 Gallery.open({ images, initialIndex: 2, loop: true })
 
-// Transition from a rect (window coordinates, in points)
+// Transition from a rect, in window coordinates (points)
 Gallery.open({
-  images: [{ url: 'https://example.com/1.jpg', width: 1200, height: 800 }],
+  images,
   origin: { x: 40, y: 400, width: 100, height: 100, borderRadius: 12 },
 })
 
@@ -118,27 +102,96 @@ Gallery.close()
 Gallery.isVisible()
 ```
 
-## Options
+## API
+
+### `<Gallery>`
+
+Takes `images`, `children`, and every option below.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `images` | `GalleryImageSource[]` | | Images to show, see [types](#types) |
+| `loop` | `boolean` | `false` | Wrap around past the first and last image |
+| `rotation` | `boolean` | `true` | Rotate with the device, see [Rotation](#rotation) |
+| `actions` | `GalleryAction[]` | | Toolbar buttons, see [types](#types) |
+| `backgroundColor` | `string` | `#000000` | Viewer background |
+| `indicatorColor` | `string` | white | Active page bullet |
+| `indicatorInactiveColor` | `string` | translucent white | Inactive page bullets |
+| `onShow` | `() => void` | | Viewer finished presenting |
+| `onIndexChange` | `(payload) => void` | | Current page changed |
+| `onActionPress` | `(actionId, payload) => void` | | Any action pressed, in addition to that action's own `onPress` |
+| `onDismiss` | `(payload) => void` | | Viewer dismissed |
+
+Every `payload` is `{ index, url }`.
+
+### `<Gallery.Image>`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `index` | `number` | Index of this thumbnail in the surrounding gallery's `images` |
+| `onLongPress` | `(payload) => void` | Long press on the thumbnail |
+| `disabled` | `boolean` | Disables the pressable |
+| `style` | `StyleProp<ViewStyle>` | Style for the wrapping pressable. A uniform numeric `borderRadius` is animated during the transition |
+
+### `Gallery.open(options)`
+
+Takes every `<Gallery>` prop except `children`, plus:
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `images` | `GalleryImageSource[]` | Images to show: `{ url, thumbnail?, width?, height? }` — `url` is http/https/file; `thumbnail` is the smaller URL your thumbnail view renders, reused for the transition and as the page placeholder; the optional intrinsic dimensions let the open transition land on the image's real aspect ratio before the full image has loaded |
-| `initialIndex` | `number` | Page to open at (imperative only; `Gallery.Image` uses its `index`) |
-| `loop` | `boolean` | Wrap around past the first/last image |
-| `rotation` | `boolean` | Rotate with the device while open, default `true` (see [Rotation](#rotation)) |
-| `origin` | `TransitionRect` | Rect to transition from/back to (imperative only) |
-| `actions` | `GalleryAction[]` | Toolbar buttons: `{ id, icon, title?, onPress? }` — `icon` is an SF Symbol name |
-| `backgroundColor` | `string` | Viewer background, default `#000000` |
-| `indicatorColor` | `string` | Active page bullet color, default white |
-| `indicatorInactiveColor` | `string` | Inactive page bullet color, default translucent white |
-| `onShow` | `() => void` | Viewer finished presenting |
-| `onIndexChange` | `(payload) => void` | Current page changed; payload is `{ index, url }` |
-| `onActionPress` | `(actionId, payload) => void` | Any action pressed (in addition to the action's own `onPress`) |
-| `onDismiss` | `(payload) => void` | Viewer dismissed |
+| `initialIndex` | `number` | Page to open at, default `0` |
+| `origin` | `TransitionRect` | Rect to transition from and back to. Omit for a plain fade |
 
-## Rotation
+### `Gallery.close()`
 
-The gallery rotates with the device by default; pass `rotation={false}` (or `rotation: false`) to keep it in the orientation it opened in. UIKit caps a presented controller at the orientations the app allows, so a portrait-locked app has to widen them while the gallery is open — with [expo-screen-orientation](https://docs.expo.dev/versions/latest/sdk/screen-orientation/), unlock on open and lock again on dismiss:
+Dismisses the viewer. Safe to call during the open transition; the dismiss runs as soon as presentation completes.
+
+### `Gallery.isVisible()`
+
+Whether a viewer is currently presented.
+
+### Types
+
+```ts
+interface GalleryImageSource {
+  /** http, https, or file URL. */
+  url: string
+  /** Smaller copy your thumbnail renders; reused for the transition and as the page placeholder. */
+  thumbnail?: string
+  /** Intrinsic pixel size; lets the transition land on the real aspect before the full image loads. */
+  width?: number
+  height?: number
+}
+
+interface GalleryAction {
+  id: string
+  /** SF Symbol name. */
+  icon: string
+  /** Accessibility label; falls back to id. */
+  title?: string
+  onPress?: (payload: GalleryEventPayload) => void
+}
+
+interface TransitionRect {
+  /** Window coordinates, in points. */
+  x: number
+  y: number
+  width: number
+  height: number
+  borderRadius?: number
+}
+
+interface GalleryEventPayload {
+  index: number
+  url: string
+}
+```
+
+## Guides
+
+### Rotation
+
+The gallery rotates with the device by default; pass `rotation={false}` to keep the orientation it opened in. UIKit caps a presented controller at the orientations the app allows, so a portrait-locked app has to widen them while the gallery is open. With [expo-screen-orientation](https://docs.expo.dev/versions/latest/sdk/screen-orientation/), unlock on show and lock again on dismiss:
 
 ```tsx
 <Gallery
@@ -148,9 +201,49 @@ The gallery rotates with the device by default; pass `rotation={false}` (or `rot
 >
 ```
 
+### Nesting inside a pressable
+
+`Gallery.Image` renders gesture-handler's `Pressable`, so it keeps working inside gesture-handler pressables and touchables. The innermost pressable wins:
+
+```tsx
+import { Pressable } from 'react-native-gesture-handler'
+
+<Pressable onPress={openPost}>
+  <Text>Tapping the image opens the gallery; tapping anywhere else presses the card.</Text>
+
+  <Gallery.Image index={0}>
+    <Image source={url} style={styles.image} />
+  </Gallery.Image>
+</Pressable>
+```
+
+### Images and caching
+
+The library loads through SDWebImage's shared cache, the same one expo-image uses, so the two cooperate:
+
+- Pass `thumbnail` with the URL your thumbnail view renders. When it is already decoded, the transition and the first page use it until the full image loads.
+- Pass `width` and `height` so the transition lands on the image's real aspect ratio before it has loaded.
+- expo-image only fills the shared memory cache with `cachePolicy="memory-disk"`. With its default `disk` policy, the gallery borrows the bitmap straight from the pressed view instead.
+- Full-size downloads are written to the shared disk cache under the plain URL, so an image viewed in the gallery is a cache hit for expo-image afterwards.
+- Pages decode at up to 1.5x screen pixels per axis, enough for zooming without holding full-resolution bitmaps, and the pages either side of the current one are prefetched.
+
 ## How the transition works
 
-The thumbnail is measured in window coordinates (`measureInWindow`) and passed to native, which animates a copy of the image from that rect into an aspect-fit fullscreen frame. The copy uses the best bitmap already decoded in the app: the full image if any SDWebImage client has it in memory, else the `thumbnail` URL from the same cache, else the pixels the pressed view is rendering (expo-image only populates the shared memory cache with `cachePolicy="memory-disk"`; with its default `disk` policy the gallery borrows the bitmap from the view instead). GIFs hand their current frame from the thumbnail to the flying copy to the page, and back on dismiss, so they keep playing instead of restarting. The first page is seeded with the same bitmap, so the transition lands on identical pixels and the full image simply replaces it once loaded. Only when nothing is available does it fall back to a snapshot of the thumbnail view. The copy flies beneath the toolbar, and the open transition runs as a self-driven interactive transition so the toolbar is tappable from the first frame (UIKit swallows touches for the whole of a non-interactive transition); a close tapped mid-flight is honored as soon as presentation completes. Full-size downloads are also written to the shared disk cache under the plain URL, so an image viewed in the gallery is a cache hit for expo-image afterwards. While paging, the library keeps native updated with the on-screen frame of the current image's thumbnail so an interactive dismiss can land on it; if that thumbnail is unmounted or offscreen, the dismiss falls back to a fade.
+- **Open.** The thumbnail is measured in window coordinates and passed to native, which flies a copy of the image from that rect into an aspect-fit fullscreen frame. The copy uses the best bitmap already decoded: the full image if any SDWebImage client has it in memory, else the `thumbnail`, else the pixels the pressed view is rendering, else a snapshot of the view.
+- **Seamless landing.** The first page is seeded with the same bitmap, so the copy lands on identical pixels and the full image simply replaces it once loaded.
+- **GIFs.** The current frame is handed from the thumbnail to the flying copy to the page, and back on dismiss, so the animation keeps playing instead of restarting.
+- **Live toolbar.** The open runs as a self-driven interactive transition, so the toolbar is tappable from the first frame; a close tapped mid-flight is honored as soon as presentation completes.
+- **Dismiss.** While paging, JS keeps native updated with the on-screen frame of the current image's thumbnail, so an interactive dismiss lands on it. If that thumbnail is unmounted or offscreen, the dismiss falls back to a fade.
+
+## Sponsors
+
+<p align="center">
+  <a href="https://acorn.blue"><img alt="Acorn" src="https://acorn.blue/images/acorn.png" width="80"></a>
+</p>
+
+<p align="center">
+  Built for and sponsored by <a href="https://acorn.blue">Acorn</a>, a Reddit client for iOS.
+</p>
 
 ## License
 
