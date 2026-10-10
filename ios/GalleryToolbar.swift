@@ -9,6 +9,11 @@ final class GalleryToolbar: UIView {
   init(actions: [GalleryActionItem]) {
     super.init(frame: .zero)
 
+    // Inherit the controller view's system margins (safe area included)
+    // instead of a subview's default 8pt.
+    directionalLayoutMargins = .zero
+    preservesSuperviewLayoutMargins = true
+
     // Liquid Glass carries its own contrast; the scrim is only for older iOS.
     if #unavailable(iOS 26) {
       gradient.colors = [
@@ -42,9 +47,9 @@ final class GalleryToolbar: UIView {
     addSubview(group)
 
     NSLayoutConstraint.activate([
-      close.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+      close.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
       close.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4),
-      group.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
+      group.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
       group.centerYAnchor.constraint(equalTo: close.centerYAnchor),
     ])
   }

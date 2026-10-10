@@ -114,11 +114,21 @@ final class GalleryViewController: UIViewController {
     indicator.isHidden = session.urls.count <= 1 || session.urls.count > 20
     view.addSubview(indicator)
 
+    // On iPhone Duo the plain safe area has no top inset (the status bar sits
+    // in a right-hand column); the corner-adapted region clears the screen
+    // corner and matches the plain one on other iPhones.
+    let topGuide: UILayoutGuide
+    if #available(iOS 26, *) {
+      topGuide = view.layoutGuide(for: .safeArea(cornerAdaptation: .vertical))
+    } else {
+      topGuide = view.safeAreaLayoutGuide
+    }
+
     NSLayoutConstraint.activate([
       toolbar.topAnchor.constraint(equalTo: view.topAnchor),
       toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      toolbar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 52),
+      toolbar.bottomAnchor.constraint(equalTo: topGuide.topAnchor, constant: 52),
       indicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
       indicator.bottomAnchor.constraint(
         equalTo: view.safeAreaLayoutGuide.bottomAnchor,
