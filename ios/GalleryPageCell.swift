@@ -104,8 +104,7 @@ final class GalleryPageCell: UICollectionViewCell {
     dismissCornerRadius = 0
 
     if let placeholder {
-      imageView.image = placeholder.image
-      imageView.seek(to: placeholder.frame)
+      imageView.setImage(placeholder.image, continuing: placeholder.frame)
       layoutImage()
 
       // The full image is already decoded: adopt it rather than decoding a
@@ -130,10 +129,7 @@ final class GalleryPageCell: UICollectionViewCell {
         return
       }
 
-      let position = self.imageView.framePosition
-
-      self.imageView.image = image
-      self.imageView.seek(to: position)
+      self.imageView.setImage(image, continuing: self.imageView.framePosition)
       self.imageSize = image.size
       self.layoutImage()
       self.onImageLoad?()

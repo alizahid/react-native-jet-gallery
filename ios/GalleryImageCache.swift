@@ -84,6 +84,9 @@ struct GalleryFramePosition {
   let index: UInt
   let loopCount: UInt
   let frameCount: UInt
+  /// The already-decoded frame at `index`, held on screen while a new view
+  /// decodes its own copy of that frame off the main thread.
+  let still: UIImage?
 }
 
 extension SDAnimatedImageView {
@@ -95,8 +98,39 @@ extension SDAnimatedImageView {
     return GalleryFramePosition(
       index: player.currentFrameIndex,
       loopCount: player.currentLoopCount,
-      frameCount: player.totalFrameCount
+      frameCount: player.totalFrameCount,
+      still: currentFrame
     )
+  }
+
+  /// Sets `image` and continues it from `position`. Seeking decodes the
+  /// target frame synchronously, which for a large GIF stalls the main thread
+  /// long enough to visibly delay the open. So the frame is decoded in the
+  /// background (warming ImageIO's cache, making the seek a lookup) while the
+  /// previous view's still holds its place.
+  func setImage(_ image: UIImage, continuing position: GalleryFramePosition?) {
+    guard let position, position.index > 0, let still = position.still,
+          let animated = image as? SDAnimatedImage,
+          animated.animatedImageFrameCount == position.frameCount else {
+      self.image = image
+      return
+    }
+
+    self.image = still
+
+    DispatchQueue.global(qos: .userInteractive).async { [weak self] in
+      _ = animated.animatedImageFrame(at: position.index)
+
+      DispatchQueue.main.async {
+        // Anything else set in the meantime (reuse, a newer load) wins.
+        guard let self, self.image === still else {
+          return
+        }
+
+        self.image = image
+        self.seek(to: position)
+      }
+    }
   }
 
   /// Seeks to `position` when this view is playing the same animation (same

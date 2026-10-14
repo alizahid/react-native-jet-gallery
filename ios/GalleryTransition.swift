@@ -159,8 +159,11 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
     var fillContent: UIView?
 
     if let start = startRect {
-      if image != nil {
-        animatedView = makeTransitionImageView(image: image)
+      if let image {
+        let view = makeTransitionImageView(image: nil)
+        // Continue the thumbnail's GIF from its current frame instead of frame 0.
+        view.setImage(image, continuing: placeholder?.frame)
+        animatedView = view
       } else {
         var snapshot = session.sourceView?.snapshotView(afterScreenUpdates: false)
 
@@ -221,8 +224,6 @@ final class GalleryPresentAnimator: NSObject, UIViewControllerAnimatedTransition
     // when the copy is removed. The view's frame matches the container, so
     // container-space rects apply unchanged.
     controller.view.insertSubview(animated, aboveSubview: controller.pager)
-    // Continue the thumbnail's GIF from its current frame instead of frame 0.
-    (animated as? SDAnimatedImageView)?.seek(to: placeholder?.frame)
 
     controller.dimView.alpha = 0
     controller.chromeAlpha = 0
