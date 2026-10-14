@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.1
+
+### Fixed
+
+- Opening a large GIF no longer stalls before the zoom starts. Resuming the GIF from the thumbnail's frame decoded that frame on the main thread; it now decodes in the background while the thumbnail's current frame holds its place, so GIFs open as fast as still images.
+
+### Compatibility
+
+- No breaking changes from 1.1.0.
+
 ## 1.1.0
 
 ### Fixed
