@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1](https://github.com/alizahid/react-native-jet-gallery/compare/v1.1.0...v1.1.1) (2026-10-14)
+
+### Bug Fixes
+
+* decode the GIF resume frame off the main thread on open ([bc18fc4](https://github.com/alizahid/react-native-jet-gallery/commit/bc18fc4476656275a65c0f416ccd1686659ae93d))
+
 ## 1.1.1
 
 ### Fixed
